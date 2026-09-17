@@ -228,11 +228,174 @@
       </div>
 
       <div id="log-sources-view" class="view hidden">
-        <section class="rounded-xl border border-line bg-base-800/50 p-6">
-          <h2 class="text-lg font-semibold text-slate-100">Log Sources</h2>
-          <p class="mt-1 text-sm text-muted">Manage the telemetry sources connected to Sentinel.</p>
-          <div class="mt-6 rounded-lg border border-line bg-base-900/50 p-4 text-sm text-muted">No additional log sources configured.</div>
-        </section>
+        <!-- Header -->
+      <header class="pre-anim animate-fade-up delay-1 flex flex-wrap items-end justify-between gap-4">
+        <div>
+          <h1 class="text-xl font-semibold tracking-tight text-slate-100">Log Sources</h1>
+          <p class="mt-1 text-sm text-muted">Ingested log files and their analysis status across connected storage.</p>
+        </div>
+        <button type="button"
+          class="inline-flex items-center gap-2 rounded-md bg-accent px-4 py-2 text-sm font-medium text-white transition-all duration-200 hover:bg-accent-soft focus:outline-none focus:ring-2 focus:ring-accent/50 active:scale-[0.98]">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" x2="12" y1="3" y2="15"/></svg>
+          Upload Log
+        </button>
+      </header>
+
+      <!-- Toolbar -->
+      <div class="pre-anim animate-fade-up delay-2 mt-7 flex flex-wrap items-center justify-between gap-3">
+        <div class="relative w-full max-w-xs">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" class="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-faint"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+          <input type="text" placeholder="Search files&hellip;"
+            class="w-full rounded-md border border-line bg-base-800/60 py-2 pl-9 pr-3 text-sm text-slate-100 placeholder:text-faint transition-colors focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent/40" />
+        </div>
+        <div class="flex items-center gap-2 text-xs text-muted">
+          <span class="rounded-md border border-line bg-base-800/60 px-2.5 py-1.5 font-mono">4 sources</span>
+          <span class="hidden sm:inline">&middot;</span>
+          <span class="hidden sm:inline">Last sync 2m ago</span>
+        </div>
+      </div>
+
+      <!-- Table -->
+      <section class="pre-anim animate-fade-up delay-3 mt-4 overflow-hidden rounded-xl border border-line bg-base-800/50">
+        <div class="overflow-x-auto">
+          <table class="w-full min-w-180 border-collapse text-left text-sm">
+            <thead>
+              <tr class="border-b border-line text-[11px] uppercase tracking-wider text-faint">
+                <th scope="col" class="px-6 py-3.5 font-medium">File Name</th>
+                <th scope="col" class="px-6 py-3.5 font-medium">Upload Date</th>
+                <th scope="col" class="px-6 py-3.5 font-medium">Storage Location</th>
+                <th scope="col" class="px-6 py-3.5 font-medium">Status</th>
+                <th scope="col" class="px-6 py-3.5 text-right font-medium">Actions</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-line/70">
+              <!-- Row 1 -->
+              <tr class="group transition-colors hover:bg-base-700/40">
+                <td class="px-6 py-4">
+                  <div class="flex items-center gap-3">
+                    <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-base-900/70 ring-1 ring-inset ring-line">
+                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4 text-muted"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5z"/><path d="M14 2v6h6"/></svg>
+                    </div>
+                    <span class="font-mono text-[13px] text-slate-100">apache_error.log</span>
+                  </div>
+                </td>
+                <td class="px-6 py-4 text-muted">Today 09:42 AM</td>
+                <td class="px-6 py-4">
+                  <span class="inline-flex items-center gap-1.5 text-muted">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" class="h-3.5 w-3.5 text-faint"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v14a9 3 0 0 0 18 0V5"/><path d="M3 12a9 3 0 0 0 18 0"/></svg>
+                    AWS S3 (us-east-1)
+                  </span>
+                </td>
+                <td class="px-6 py-4">
+                  <span class="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/25 bg-emerald-500/10 px-2.5 py-1 text-xs font-medium text-emerald-300">
+                    <span class="h-1.5 w-1.5 rounded-full bg-emerald-400"></span>
+                    Analyzed
+                  </span>
+                </td>
+                <td class="px-6 py-4 text-right">
+                  <button type="button" aria-label="View apache_error.log"
+                    class="inline-flex h-8 w-8 items-center justify-center rounded-md text-faint transition-colors hover:bg-base-600/60 hover:text-accent-soft focus:outline-none focus:ring-1 focus:ring-accent/40">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+                  </button>
+                </td>
+              </tr>
+
+              <!-- Row 2 -->
+              <tr class="group transition-colors hover:bg-base-700/40">
+                <td class="px-6 py-4">
+                  <div class="flex items-center gap-3">
+                    <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-base-900/70 ring-1 ring-inset ring-line">
+                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4 text-muted"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5z"/><path d="M14 2v6h6"/></svg>
+                    </div>
+                    <span class="font-mono text-[13px] text-slate-100">auth_syslog.log</span>
+                  </div>
+                </td>
+                <td class="px-6 py-4 text-muted">Today 08:15 AM</td>
+                <td class="px-6 py-4">
+                  <span class="inline-flex items-center gap-1.5 text-muted">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" class="h-3.5 w-3.5 text-faint"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v14a9 3 0 0 0 18 0V5"/><path d="M3 12a9 3 0 0 0 18 0"/></svg>
+                    AWS S3 (us-east-1)
+                  </span>
+                </td>
+                <td class="px-6 py-4">
+                  <span class="inline-flex items-center gap-1.5 rounded-full border border-accent/30 bg-accent/10 px-2.5 py-1 text-xs font-medium text-accent-soft">
+                    <span class="h-1.5 w-1.5 animate-pulse-dot rounded-full bg-accent-soft"></span>
+                    Analyzing
+                  </span>
+                </td>
+                <td class="px-6 py-4 text-right">
+                  <button type="button" aria-label="View auth_syslog.log"
+                    class="inline-flex h-8 w-8 items-center justify-center rounded-md text-faint transition-colors hover:bg-base-600/60 hover:text-accent-soft focus:outline-none focus:ring-1 focus:ring-accent/40">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+                  </button>
+                </td>
+              </tr>
+
+              <!-- Row 3 -->
+              <tr class="group transition-colors hover:bg-base-700/40">
+                <td class="px-6 py-4">
+                  <div class="flex items-center gap-3">
+                    <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-base-900/70 ring-1 ring-inset ring-line">
+                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4 text-muted"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5z"/><path d="M14 2v6h6"/></svg>
+                    </div>
+                    <span class="font-mono text-[13px] text-slate-100">nginx_access.log</span>
+                  </div>
+                </td>
+                <td class="px-6 py-4 text-muted">Yesterday 11:20 PM</td>
+                <td class="px-6 py-4">
+                  <span class="inline-flex items-center gap-1.5 text-muted">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" class="h-3.5 w-3.5 text-faint"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v14a9 3 0 0 0 18 0V5"/><path d="M3 12a9 3 0 0 0 18 0"/></svg>
+                    AWS S3 (us-west-2)
+                  </span>
+                </td>
+                <td class="px-6 py-4">
+                  <span class="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/25 bg-emerald-500/10 px-2.5 py-1 text-xs font-medium text-emerald-300">
+                    <span class="h-1.5 w-1.5 rounded-full bg-emerald-400"></span>
+                    Analyzed
+                  </span>
+                </td>
+                <td class="px-6 py-4 text-right">
+                  <button type="button" aria-label="View nginx_access.log"
+                    class="inline-flex h-8 w-8 items-center justify-center rounded-md text-faint transition-colors hover:bg-base-600/60 hover:text-accent-soft focus:outline-none focus:ring-1 focus:ring-accent/40">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+                  </button>
+                </td>
+              </tr>
+
+              <!-- Row 4 -->
+              <tr class="group transition-colors hover:bg-base-700/40">
+                <td class="px-6 py-4">
+                  <div class="flex items-center gap-3">
+                    <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-base-900/70 ring-1 ring-inset ring-line">
+                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4 text-muted"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5z"/><path d="M14 2v6h6"/></svg>
+                    </div>
+                    <span class="font-mono text-[13px] text-slate-100">firewall_deny.log</span>
+                  </div>
+                </td>
+                <td class="px-6 py-4 text-muted">Yesterday 06:03 PM</td>
+                <td class="px-6 py-4">
+                  <span class="inline-flex items-center gap-1.5 text-muted">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" class="h-3.5 w-3.5 text-faint"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v14a9 3 0 0 0 18 0V5"/><path d="M3 12a9 3 0 0 0 18 0"/></svg>
+                    Local Ingest Node
+                  </span>
+                </td>
+                <td class="px-6 py-4">
+                  <span class="inline-flex items-center gap-1.5 rounded-full border border-alert/30 bg-alert/10 px-2.5 py-1 text-xs font-medium text-alert-soft">
+                    <span class="h-1.5 w-1.5 rounded-full bg-alert-soft"></span>
+                    Failed
+                  </span>
+                </td>
+                <td class="px-6 py-4 text-right">
+                  <button type="button" aria-label="View firewall_deny.log"
+                    class="inline-flex h-8 w-8 items-center justify-center rounded-md text-faint transition-colors hover:bg-base-600/60 hover:text-accent-soft focus:outline-none focus:ring-1 focus:ring-accent/40">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
       </div>
 
       <div id="alerts-view" class="view hidden">
