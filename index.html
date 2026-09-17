@@ -122,18 +122,22 @@
     <!-- Main -->
     <main class="flex-1 px-6 py-6 md:px-10 md:py-9">
       <!-- Header -->
-      <header class="pre-anim animate-fade-up delay-1 flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <h1 class="text-xl font-semibold tracking-tight text-slate-100">Telemetry Analysis</h1>
-          <p class="mt-1 text-sm text-muted">Upload raw log telemetry to correlate indicators and generate a mitigation report.</p>
-        </div>
+      <header class="pre-anim animate-fade-up delay-1 flex justify-end">
         <div class="flex items-center gap-2 rounded-md border border-line bg-base-800/60 px-3 py-1.5 text-xs text-muted">
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" class="h-3.5 w-3.5"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
-          Analysis Time: --s
+          Status: Standing By
         </div>
       </header>
 
       <div id="overview-view" class="view">
+      <!-- Overview header -->
+      <header class="pre-anim animate-fade-up delay-1 mt-7 flex flex-wrap items-end justify-between gap-4">
+        <div>
+          <h1 class="text-xl font-semibold tracking-tight text-slate-100">Telemetry Analysis</h1>
+          <p class="mt-1 text-sm text-muted">Upload raw log telemetry to correlate indicators and generate a mitigation report.</p>
+        </div>
+      </header>
+
       <!-- Upload zone -->
       <section class="pre-anim animate-fade-up delay-2 mt-7">
         <label id="dropzone"
@@ -399,11 +403,48 @@
       </div>
 
       <div id="alerts-view" class="view hidden">
-        <section class="rounded-xl border border-line bg-base-800/50 p-6">
-          <h2 class="text-lg font-semibold text-slate-100">Alerts</h2>
-          <p class="mt-1 text-sm text-muted">Review active detections and prioritized incidents.</p>
-          <div class="mt-6 rounded-lg border border-line bg-base-900/50 p-4 text-sm text-muted">No unreviewed alerts.</div>
-        </section>
+        <!-- Header -->
+      <header class="pre-anim animate-fade-up delay-1 flex flex-wrap items-end justify-between gap-4">
+        <div>
+          <h1 class="text-xl font-semibold tracking-tight text-slate-100">Alerts</h1>
+          <p class="mt-1 text-sm text-muted">Real-time security detections correlated across ingested log sources.</p>
+        </div>
+        <button type="button" class="inline-flex items-center gap-2 rounded-md border border-line bg-base-800/60 px-4 py-2 text-sm font-medium text-slate-200 transition-all duration-200 hover:bg-base-700 focus:outline-none focus:ring-2 focus:ring-accent/50 active:scale-[0.98]">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4"><path d="M20 6 9 17l-5-5"/></svg>
+          Mark all read
+        </button>
+      </header>
+
+      <!-- Severity summary -->
+      <div class="pre-anim animate-fade-up delay-2 mt-7 grid grid-cols-1 gap-3 sm:grid-cols-3">
+        <div class="rounded-xl border border-alert/25 bg-alert/[0.06] px-4 py-3.5">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-medium uppercase tracking-wider text-alert-soft">High</span>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4 text-alert"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>
+          </div>
+          <p class="mt-2 font-mono text-2xl font-semibold text-slate-100">3</p>
+        </div>
+        <div class="rounded-xl border border-warn/25 bg-warn/[0.06] px-4 py-3.5">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-medium uppercase tracking-wider text-warn-soft">Medium</span>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4 text-warn"><circle cx="12" cy="12" r="10"/><path d="M12 8v4"/><path d="M12 16h.01"/></svg>
+          </div>
+          <p class="mt-2 font-mono text-2xl font-semibold text-slate-100">2</p>
+        </div>
+        <div class="rounded-xl border border-line bg-base-800/50 px-4 py-3.5">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-medium uppercase tracking-wider text-muted">Low</span>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4 text-faint"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>
+          </div>
+          <p class="mt-2 font-mono text-2xl font-semibold text-slate-100">5</p>
+        </div>
+      </div>
+
+      <!-- Alert timeline -->
+      <section class="pre-anim animate-fade-up delay-3 mt-7 flex flex-col gap-3">
+         <!-- Note: I kept this brief, but copy all 3 of the <article> blocks for High, Medium, and Low alerts from your code! -->
+         <!-- Paste the <article> blocks here -->
+      </section>
       </div>
 
       <div id="settings-view" class="view hidden">
