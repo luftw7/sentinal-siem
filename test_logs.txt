@@ -1,0 +1,46 @@
+# --- /var/log/nginx/access.log ---
+192.168.1.105 - - [17/Sep/2026:12:00:05 +0530] "GET / HTTP/1.1" 200 3421 "-" "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"
+192.168.1.105 - - [17/Sep/2026:12:00:06 +0530] "GET /css/style.css HTTP/1.1" 200 854 "http://localhost/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"
+192.168.1.105 - - [17/Sep/2026:12:00:06 +0530] "GET /js/app.js HTTP/1.1" 200 1245 "http://localhost/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"
+10.0.0.22 - - [17/Sep/2026:12:02:14 +0530] "GET /about HTTP/1.1" 200 2100 "-" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)"
+10.0.0.22 - - [17/Sep/2026:12:02:16 +0530] "GET /images/team.jpg HTTP/1.1" 200 45012 "http://localhost/about" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)"
+198.51.100.3 - - [17/Sep/2026:12:05:32 +0530] "GET / HTTP/1.1" 200 3421 "-" "Mozilla/5.0 (X11; Linux x86_64)"
+198.51.100.3 - - [17/Sep/2026:12:05:35 +0530] "GET /contact HTTP/1.1" 200 1540 "http://localhost/" "Mozilla/5.0 (X11; Linux x86_64)"
+192.168.1.105 - - [17/Sep/2026:12:08:11 +0530] "GET /products HTTP/1.1" 200 4300 "-" "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"
+192.168.1.105 - - [17/Sep/2026:12:08:15 +0530] "GET /products?id=12 HTTP/1.1" 200 1205 "http://localhost/products" "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"
+10.0.0.45 - - [17/Sep/2026:12:10:01 +0530] "GET / HTTP/1.1" 200 3421 "-" "curl/7.81.0"
+10.0.0.45 - - [17/Sep/2026:12:10:05 +0530] "GET /api/v1/status HTTP/1.1" 200 120 "-" "curl/7.81.0"
+192.168.1.50 - - [17/Sep/2026:12:10:20 +0530] "GET / HTTP/1.1" 200 3421 "-" "Mozilla/5.0 (iPhone; CPU iPhone OS 16_0 like Mac OS X)"
+192.168.1.50 - - [17/Sep/2026:12:10:22 +0530] "GET /css/mobile.css HTTP/1.1" 200 642 "http://localhost/" "Mozilla/5.0 (iPhone; CPU iPhone OS 16_0 like Mac OS X)"
+
+203.0.113.42 - - [17/Sep/2026:12:11:05 +0530] "GET /products?id=1%27%20OR%20%271%27%3D%271 HTTP/1.1" 200 5322 "-" "Mozilla/5.0 (X11; Linux x86_64)"
+203.0.113.42 - - [17/Sep/2026:12:11:06 +0530] "GET /products?id=1%27%3B%20DROP%20TABLE%20users%3B-- HTTP/1.1" 500 241 "-" "Mozilla/5.0 (X11; Linux x86_64)"
+203.0.113.42 - - [17/Sep/2026:12:11:08 +0530] "GET /login HTTP/1.1" 200 1250 "-" "Mozilla/5.0 (X11; Linux x86_64)"
+203.0.113.42 - - [17/Sep/2026:12:11:10 +0530] "POST /login HTTP/1.1" 401 512 "http://localhost/login" "Mozilla/5.0 (X11; Linux x86_64) sqlmap/1.6.4"
+203.0.113.42 - - [17/Sep/2026:12:11:12 +0530] "POST /login HTTP/1.1" 200 3102 "http://localhost/login" "Mozilla/5.0 (X11; Linux x86_64)"
+203.0.113.42 - - [17/Sep/2026:12:11:15 +0530] "GET /admin/dashboard HTTP/1.1" 200 5022 "-" "Mozilla/5.0 (X11; Linux x86_64)"
+
+203.0.113.42 - - [17/Sep/2026:12:12:01 +0530] "SSH-2.0-libssh2_1.8.0" 400 157 "-" "-"
+203.0.113.42 - - [17/Sep/2026:12:12:02 +0530] "SSH-2.0-libssh2_1.8.0" 400 157 "-" "-"
+203.0.113.42 - - [17/Sep/2026:12:12:02 +0530] "SSH-2.0-libssh2_1.8.0" 400 157 "-" "-"
+203.0.113.42 - - [17/Sep/2026:12:12:03 +0530] "SSH-2.0-libssh2_1.8.0" 400 157 "-" "-"
+
+192.168.1.105 - - [17/Sep/2026:12:13:00 +0530] "GET / HTTP/1.1" 200 3421 "-" "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"
+192.168.1.105 - - [17/Sep/2026:12:13:05 +0530] "GET /dashboard HTTP/1.1" 200 4012 "-" "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"
+
+# --- /var/log/auth.log (Actual SSH Daemon Logs) ---
+Sep 17 12:14:01 server sshd[14502]: Connection from 203.0.113.42 port 49123
+Sep 17 12:14:03 server sshd[14502]: Failed password for root from 203.0.113.42 port 49123 ssh2
+Sep 17 12:14:04 server sshd[14502]: Disconnected from authenticating user root 203.0.113.42 port 49123 [preauth]
+Sep 17 12:14:05 server sshd[14504]: Connection from 203.0.113.42 port 49124
+Sep 17 12:14:07 server sshd[14504]: Failed password for root from 203.0.113.42 port 49124 ssh2
+Sep 17 12:14:08 server sshd[14504]: Disconnected from authenticating user root 203.0.113.42 port 49124 [preauth]
+Sep 17 12:14:09 server sshd[14506]: Connection from 203.0.113.42 port 49126
+Sep 17 12:14:11 server sshd[14506]: Failed password for admin from 203.0.113.42 port 49126 ssh2
+Sep 17 12:14:12 server sshd[14506]: Disconnected from authenticating user admin 203.0.113.42 port 49126 [preauth]
+Sep 17 12:14:13 server sshd[14508]: Connection from 203.0.113.42 port 49128
+Sep 17 12:14:15 server sshd[14508]: Failed password for admin from 203.0.113.42 port 49128 ssh2
+Sep 17 12:14:16 server sshd[14508]: Disconnected from authenticating user admin 203.0.113.42 port 49128 [preauth]
+Sep 17 12:14:17 server sshd[14510]: Connection from 203.0.113.42 port 49130
+Sep 17 12:14:19 server sshd[14510]: Failed password for user from 203.0.113.42 port 49130 ssh2
+Sep 17 12:14:20 server sshd[14510]: Disconnected from authenticating user user 203.0.113.42 port 49130 [preauth]
