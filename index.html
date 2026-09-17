@@ -244,11 +244,95 @@
       </div>
 
       <div id="settings-view" class="view hidden">
-        <section class="rounded-xl border border-line bg-base-800/50 p-6">
-          <h2 class="text-lg font-semibold text-slate-100">Settings</h2>
-          <p class="mt-1 text-sm text-muted">Configure analysis and console preferences.</p>
-          <div class="mt-6 rounded-lg border border-line bg-base-900/50 p-4 text-sm text-muted">Settings are ready to be configured.</div>
+        <!-- Header -->
+      <header class="pre-anim animate-fade-up delay-1 flex flex-wrap items-end justify-between gap-4">
+        <div>
+          <h1 class="text-xl font-semibold tracking-tight text-slate-100">Settings</h1>
+          <p class="mt-1 text-sm text-muted">Manage credentials and service integrations for your Sentinel deployment.</p>
+        </div>
+        <div class="flex items-center gap-2 rounded-md border border-line bg-base-800/60 px-3 py-1.5 text-xs text-muted">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" class="h-3.5 w-3.5"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+          Encrypted at rest
+        </div>
+      </header>
+
+      <!-- Settings body -->
+      <form id="configForm" class="mx-auto mt-8 max-w-3xl" autocomplete="off">
+        <!-- API Configuration section -->
+        <section class="pre-anim animate-fade-up delay-2 overflow-hidden rounded-xl border border-line bg-base-800/50">
+          <div class="flex items-start gap-3 border-b border-line px-6 py-5">
+            <div class="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-accent/15 ring-1 ring-inset ring-accent/30">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4 text-accent-soft"><path d="m21 2-9.6 9.6"/><circle cx="7.5" cy="15.5" r="5.5"/><path d="m21 2-2 2-2-2 2-2Z"/><path d="m15.5 7.5 3 3L22 7l-3-3"/></svg>
+            </div>
+            <div>
+              <h2 class="text-base font-semibold tracking-tight text-slate-100">API Configuration</h2>
+              <p class="mt-0.5 text-xs leading-relaxed text-muted">Credentials used for AI-assisted analysis and log archival storage.</p>
+            </div>
+          </div>
+
+          <div class="flex flex-col gap-5 px-6 py-6">
+            <!-- Gemini API Key -->
+            <div>
+              <label for="geminiKey" class="block text-sm font-medium text-slate-200">Gemini API Key</label>
+              <p class="mt-0.5 text-xs text-faint">Used for automated incident correlation and mitigation reports.</p>
+              <div class="relative mt-2">
+                <input id="geminiKey" name="geminiKey" type="password" placeholder="AIza&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;"
+                  class="w-full rounded-md border border-line bg-base-900/70 px-3 py-2.5 pr-11 font-mono text-sm text-slate-100 placeholder:text-faint transition-colors focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent/40" />
+                <button type="button" data-toggle="geminiKey" aria-label="Toggle visibility"
+                  class="absolute inset-y-0 right-0 flex w-10 items-center justify-center text-faint transition-colors hover:text-slate-300">
+                  <svg class="eye-open h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+                  <svg class="eye-off hidden h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/><path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/><path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"/><line x1="2" x2="22" y1="2" y2="22"/></svg>
+                </button>
+              </div>
+            </div>
+
+            <!-- AWS Access Key -->
+            <div>
+              <label for="awsAccessKey" class="block text-sm font-medium text-slate-200">AWS Access Key</label>
+              <p class="mt-0.5 text-xs text-faint">Grants access to the S3 bucket used for long-term log retention.</p>
+              <div class="relative mt-2">
+                <input id="awsAccessKey" name="awsAccessKey" type="password" placeholder="AKIA&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;"
+                  class="w-full rounded-md border border-line bg-base-900/70 px-3 py-2.5 pr-11 font-mono text-sm text-slate-100 placeholder:text-faint transition-colors focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent/40" />
+                <button type="button" data-toggle="awsAccessKey" aria-label="Toggle visibility"
+                  class="absolute inset-y-0 right-0 flex w-10 items-center justify-center text-faint transition-colors hover:text-slate-300">
+                  <svg class="eye-open h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+                  <svg class="eye-off hidden h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/><path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/><path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"/><line x1="2" x2="22" y1="2" y2="22"/></svg>
+                </button>
+              </div>
+            </div>
+
+            <!-- AWS S3 Bucket Name -->
+            <div>
+              <label for="s3Bucket" class="block text-sm font-medium text-slate-200">AWS S3 Bucket Name</label>
+              <p class="mt-0.5 text-xs text-faint">Destination bucket for archived telemetry and exported reports.</p>
+              <div class="relative mt-2">
+                <input id="s3Bucket" name="s3Bucket" type="password" placeholder="sentinel-log-archive-&bull;&bull;&bull;&bull;"
+                  class="w-full rounded-md border border-line bg-base-900/70 px-3 py-2.5 pr-11 font-mono text-sm text-slate-100 placeholder:text-faint transition-colors focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent/40" />
+                <button type="button" data-toggle="s3Bucket" aria-label="Toggle visibility"
+                  class="absolute inset-y-0 right-0 flex w-10 items-center justify-center text-faint transition-colors hover:text-slate-300">
+                  <svg class="eye-open h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+                  <svg class="eye-off hidden h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/><path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/><path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"/><line x1="2" x2="22" y1="2" y2="22"/></svg>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Footer action bar -->
+          <div class="flex items-center justify-between gap-4 border-t border-line bg-base-900/40 px-6 py-4">
+            <p id="statusMsg" class="text-xs text-faint">Changes are applied to the active ingest node.</p>
+            <button type="submit"
+              class="inline-flex items-center gap-2 rounded-md bg-accent px-4 py-2 text-sm font-medium text-white transition-all duration-200 hover:bg-accent-soft focus:outline-none focus:ring-2 focus:ring-accent/50 active:scale-[0.98]">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><path d="M17 21v-8H7v8"/><path d="M7 3v5h8"/></svg>
+              Save Configuration
+            </button>
+          </div>
         </section>
+      </form>
+
+      <footer class="pre-anim animate-fade-up delay-3 mx-auto mt-8 flex max-w-3xl items-center justify-between border-t border-line pt-4 text-xs text-faint">
+        <span>Sentinel SIEM &middot; Threat Intelligence Console</span>
+        <span class="font-mono">build 2.4.1</span>
+      </footer>
       </div>
     </main>
   </div>
@@ -310,6 +394,35 @@
         fileInput.files = files;
         showFile(files[0].name);
       }
+    });
+  </script>
+  <script>
+    // Toggle password visibility per field
+    document.querySelectorAll('[data-toggle]').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var input = document.getElementById(btn.getAttribute('data-toggle'));
+        var open = btn.querySelector('.eye-open');
+        var off = btn.querySelector('.eye-off');
+        if (input.type === 'password') {
+          input.type = 'text';
+          open.classList.add('hidden');
+          off.classList.remove('hidden');
+        } else {
+          input.type = 'password';
+          off.classList.add('hidden');
+          open.classList.remove('hidden');
+        }
+      });
+    });
+
+    // Save handler (front-end feedback; wire to your Flask route)
+    var form = document.getElementById('configForm');
+    var status = document.getElementById('statusMsg');
+    form.addEventListener('submit', function (e) {
+      e.preventDefault();
+      status.textContent = '\u2713 Configuration saved \u00b7 ' + new Date().toLocaleTimeString();
+      status.classList.remove('text-faint');
+      status.classList.add('text-emerald-300');
     });
   </script>
 </body>
