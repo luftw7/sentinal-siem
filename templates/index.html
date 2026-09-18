@@ -254,14 +254,14 @@
           <table class="w-full min-w-180 border-collapse text-left text-sm">
             <thead>
               <tr class="border-b border-line text-[11px] uppercase tracking-wider text-faint">
-                <th scope="col" class="px-6 py-3.5 font-medium">File Name</th>
-                <th scope="col" class="px-6 py-3.5 font-medium">Upload Date</th>
-                <th scope="col" class="px-6 py-3.5 font-medium">Storage Location</th>
-                <th scope="col" class="px-6 py-3.5 font-medium">Status</th>
-                <th scope="col" class="px-6 py-3.5 text-right font-medium">Actions</th>
+                <th scope="col" class="px-6 py-3.5 font-medium">Alert ID</th>
+                <th scope="col" class="px-6 py-3.5 font-medium">Timestamp</th>
+                <th scope="col" class="px-6 py-3.5 font-medium">Attack Vector</th>
+                <th scope="col" class="px-6 py-3.5 font-medium">Score</th>
+                <th scope="col" class="px-6 py-3.5 text-right font-medium">Origin IP</th>
               </tr>
             </thead>
-            <tbody class="divide-y divide-line/70 text-center">
+            <tbody id="logSourcesBody" class="divide-y divide-line/70 text-center">
               <tr>
                 <td colspan="5" class="px-6 py-8 text-muted">No telemetry sources connected.</td>
               </tr>
@@ -278,35 +278,35 @@
             <h1 class="text-xl font-semibold tracking-tight text-slate-100">Alerts</h1>
             <p class="mt-1 text-sm text-muted">Real-time security detections correlated across ingested log sources.</p>
           </div>
-          <button type="button"
+          <button id="resolve-all-btn" type="button"
             class="inline-flex items-center gap-2 rounded-md border border-line bg-base-800/60 px-4 py-2 text-sm font-medium text-slate-200 transition-all duration-200 hover:bg-base-700 focus:outline-none focus:ring-2 focus:ring-accent/50 active:scale-[0.98]">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4"><path d="M20 6 9 17l-5-5"/></svg>
-            Mark all read
+            Mark all resolved
           </button>
         </header>
 
         <!-- Severity summary -->
         <div class="pre-anim animate-fade-up delay-2 mt-7 grid grid-cols-1 gap-3 sm:grid-cols-3">
-          <div class="rounded-xl border border-alert/25 bg-alert/[0.06] px-4 py-3.5 opacity-50">
+          <div id="highSeverityCard" class="rounded-xl border border-gray-800 bg-gray-950/30 px-4 py-3.5 opacity-50">
             <div class="flex items-center justify-between">
               <span class="text-xs font-medium uppercase tracking-wider text-alert-soft">High</span>
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4 text-alert"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>
             </div>
-            <p class="mt-2 font-mono text-2xl font-semibold text-slate-100">0</p>
+            <p id="highCount" class="mt-2 font-mono text-2xl font-semibold text-slate-100">0</p>
           </div>
-          <div class="rounded-xl border border-warn/25 bg-warn/[0.06] px-4 py-3.5 opacity-50">
+          <div id="mediumSeverityCard" class="rounded-xl border border-gray-800 bg-gray-950/30 px-4 py-3.5 opacity-50">
             <div class="flex items-center justify-between">
               <span class="text-xs font-medium uppercase tracking-wider text-warn-soft">Medium</span>
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4 text-warn"><circle cx="12" cy="12" r="10"/><path d="M12 8v4"/><path d="M12 16h.01"/></svg>
             </div>
-            <p class="mt-2 font-mono text-2xl font-semibold text-slate-100">0</p>
+            <p id="mediumCount" class="mt-2 font-mono text-2xl font-semibold text-slate-100">0</p>
           </div>
-          <div class="rounded-xl border border-line bg-base-800/50 px-4 py-3.5 opacity-50">
+          <div id="lowSeverityCard" class="rounded-xl border border-gray-800 bg-gray-950/30 px-4 py-3.5 opacity-50">
             <div class="flex items-center justify-between">
               <span class="text-xs font-medium uppercase tracking-wider text-muted">Low</span>
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4 text-faint"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>
             </div>
-            <p class="mt-2 font-mono text-2xl font-semibold text-slate-100">0</p>
+            <p id="lowCount" class="mt-2 font-mono text-2xl font-semibold text-slate-100">0</p>
           </div>
         </div>
 
@@ -342,7 +342,7 @@
             <h2 class="text-sm font-semibold tracking-tight text-slate-100">Threat History</h2>
             <span class="font-mono text-[11px] text-faint">0 events</span>
           </div>
-          <div class="overflow-x-auto text-center">
+          <div id="alertsHistory" class="grid grid-cols-1 gap-3 p-5 text-left">
             <p class="px-6 py-8 text-sm text-muted">No security alerts detected in current telemetry.</p>
           </div>
         </section>
@@ -445,10 +445,210 @@
   <script>
     const navButtons = document.querySelectorAll('.nav-button');
     const views = document.querySelectorAll('.view');
+    const alertsHistory = document.getElementById('alertsHistory');
+    const logSourcesBody = document.getElementById('logSourcesBody');
+    const highCount = document.getElementById('highCount');
+    const mediumCount = document.getElementById('mediumCount');
+    const lowCount = document.getElementById('lowCount');
+    const highSeverityCard = document.getElementById('highSeverityCard');
+    const mediumSeverityCard = document.getElementById('mediumSeverityCard');
+    const lowSeverityCard = document.getElementById('lowSeverityCard');
+    const resolveAllButton = document.getElementById('resolve-all-btn');
+
+    function updateSeverityCard(card, count, activeClasses) {
+      const hasAlerts = count > 0;
+      card.className = 'rounded-xl border px-4 py-3.5 ' + (hasAlerts
+        ? activeClasses.card
+        : 'border-gray-800 bg-gray-950/30 opacity-50');
+
+      const label = card.querySelector('span');
+      label.className = 'text-xs font-medium uppercase tracking-wider ' + (hasAlerts
+        ? activeClasses.text
+        : 'text-gray-600');
+
+      const countElement = card.querySelector('p');
+      countElement.classList.remove('text-slate-100', 'text-gray-600', 'text-red-500', 'text-amber-500', 'text-blue-400');
+      countElement.classList.add(hasAlerts ? activeClasses.text : 'text-gray-600');
+    }
+
+    function updateSeverityCards(high, medium, low) {
+      updateSeverityCard(highSeverityCard, high, {
+        card: 'border-red-500 bg-red-900/10 opacity-100',
+        text: 'text-red-500',
+      });
+      updateSeverityCard(mediumSeverityCard, medium, {
+        card: 'border-amber-500 bg-amber-900/10 opacity-100',
+        text: 'text-amber-500',
+      });
+      updateSeverityCard(lowSeverityCard, low, {
+        card: 'border-blue-500 bg-blue-900/10 opacity-100',
+        text: 'text-blue-400',
+      });
+    }
+
+    function createHistoryCell(text, className) {
+      const cell = document.createElement('td');
+      cell.className = className;
+      cell.textContent = text;
+      return cell;
+    }
+
+    function renderAlertCards(alerts) {
+      alertsHistory.replaceChildren();
+
+      if (!alerts.length) {
+        const emptyState = document.createElement('p');
+        emptyState.className = 'px-1 py-8 text-sm text-muted';
+        emptyState.textContent = 'No security alerts detected in current telemetry.';
+        alertsHistory.appendChild(emptyState);
+        return;
+      }
+
+      alerts.forEach(function (alert) {
+        const card = document.createElement('article');
+        const isResolved = alert.status === 'resolved';
+        const score = Number(alert.score);
+        const severityClass = score >= 7
+          ? 'bg-red-950/30 border-red-900/50'
+          : score >= 4
+            ? 'bg-yellow-950/30 border-yellow-900/50'
+            : 'bg-blue-950/30 border-blue-900/50';
+        card.className = isResolved
+          ? 'rounded-xl border border-gray-700 bg-gray-900/30 p-5 opacity-50 grayscale'
+          : 'rounded-xl border p-5 ' + severityClass;
+
+        const header = document.createElement('div');
+        header.className = 'flex items-center justify-between gap-3';
+
+        const severity = document.createElement('span');
+        severity.className = 'text-xs font-medium uppercase tracking-wider text-slate-200';
+        severity.textContent = 'Severity: ' + (alert.score ?? '--') + '/10';
+
+        const timestamp = document.createElement('time');
+        timestamp.className = 'font-mono text-xs text-faint';
+        timestamp.textContent = alert.timestamp || '--';
+
+        header.append(severity, timestamp);
+
+        const vector = document.createElement('p');
+        vector.className = 'mt-3 text-lg font-medium text-slate-100';
+        vector.textContent = alert.vector || 'Unknown vector';
+
+        const ip = document.createElement('p');
+        ip.className = 'mt-2 font-mono text-sm text-muted';
+        ip.textContent = 'Origin IP: ' + (alert.ip || '--');
+
+        card.append(header, vector, ip);
+
+        if (!isResolved) {
+          const resolveButton = document.createElement('button');
+          resolveButton.type = 'button';
+          resolveButton.className = 'mt-4 rounded-md border border-slate-600 px-3 py-1.5 text-xs font-medium text-slate-200 transition-colors hover:bg-slate-800';
+          resolveButton.textContent = 'Resolve';
+          resolveButton.addEventListener('click', async function () {
+            resolveButton.disabled = true;
+            try {
+              const response = await fetch('/api/resolve/' + alert.id, { method: 'POST' });
+              if (!response.ok) {
+                throw new Error('Unable to resolve alert.');
+              }
+              await fetchHistory();
+            } catch (error) {
+              resolveButton.disabled = false;
+              resolveButton.textContent = error.message;
+            }
+          });
+          card.appendChild(resolveButton);
+        }
+
+        alertsHistory.appendChild(card);
+      });
+    }
+
+    function renderLogSources(alerts) {
+      logSourcesBody.replaceChildren();
+
+      if (!alerts.length) {
+        const emptyRow = document.createElement('tr');
+        const emptyCell = createHistoryCell('No telemetry sources connected.', 'px-6 py-8 text-muted');
+        emptyCell.colSpan = 5;
+        emptyRow.appendChild(emptyCell);
+        logSourcesBody.appendChild(emptyRow);
+        return;
+      }
+
+      alerts.forEach(function (alert) {
+        const row = document.createElement('tr');
+        row.className = 'transition-colors hover:bg-base-700/40';
+        row.append(
+          createHistoryCell('#' + alert.id, 'px-6 py-4 text-left font-mono text-xs text-slate-100'),
+          createHistoryCell(alert.timestamp || '--', 'px-6 py-4 text-left text-muted'),
+          createHistoryCell(alert.vector || 'Unknown vector', 'px-6 py-4 text-left text-slate-100'),
+          createHistoryCell(String(alert.score ?? '--') + '/10', 'px-6 py-4 text-left text-alert-soft'),
+          createHistoryCell(alert.ip || '--', 'px-6 py-4 text-right font-mono text-xs text-muted')
+        );
+        logSourcesBody.appendChild(row);
+      });
+    }
+
+    async function fetchHistory() {
+      try {
+        const response = await fetch('/api/history');
+        if (!response.ok) {
+          throw new Error('Unable to load alert history.');
+        }
+
+        const alerts = await response.json();
+        const activeAlerts = alerts.filter(function (alert) {
+          return alert.status === 'active';
+        });
+        const highAlerts = activeAlerts.filter(function (alert) {
+          return Number(alert.score) >= 7;
+        });
+        const mediumAlerts = activeAlerts.filter(function (alert) {
+          const score = Number(alert.score);
+          return score >= 4 && score < 7;
+        });
+        const lowAlerts = activeAlerts.filter(function (alert) {
+          return Number(alert.score) < 4;
+        });
+        highCount.textContent = highAlerts.length;
+        mediumCount.textContent = mediumAlerts.length;
+        lowCount.textContent = lowAlerts.length;
+        updateSeverityCards(highAlerts.length, mediumAlerts.length, lowAlerts.length);
+        renderAlertCards(alerts);
+        renderLogSources(alerts);
+      } catch (error) {
+        highCount.textContent = '0';
+        mediumCount.textContent = '0';
+        lowCount.textContent = '0';
+        updateSeverityCards(0, 0, 0);
+        renderAlertCards([]);
+        renderLogSources([]);
+        alertsHistory.firstChild.textContent = error.message;
+      }
+    }
+
+    resolveAllButton.addEventListener('click', async function () {
+      resolveAllButton.disabled = true;
+      try {
+        const response = await fetch('/api/resolve_all', { method: 'POST' });
+        if (!response.ok) {
+          throw new Error('Unable to resolve all alerts.');
+        }
+        await fetchHistory();
+      } finally {
+        resolveAllButton.disabled = false;
+      }
+    });
 
     navButtons.forEach(function (button) {
       button.addEventListener('click', function () {
         const targetView = button.dataset.view;
+
+        if (targetView === 'alerts-view' || targetView === 'log-sources-view') {
+          fetchHistory();
+        }
 
         views.forEach(function (view) {
           view.classList.toggle('hidden', view.id !== targetView);

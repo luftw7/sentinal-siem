@@ -43,10 +43,18 @@ def init_db():
                 vector TEXT,
                 score REAL,
                 mitigation TEXT,
-                timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
+                timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
+                status TEXT DEFAULT 'active'
             )
             """
         )
+        columns = {
+            row[1] for row in connection.execute("PRAGMA table_info(alerts)")
+        }
+        if "status" not in columns:
+            connection.execute(
+                "ALTER TABLE alerts ADD COLUMN status TEXT DEFAULT 'active'"
+            )
         connection.commit()
     finally:
         connection.close()
@@ -105,12 +113,16 @@ def analyze():
     connection = sqlite3.connect("siem.db")
     try:
         connection.execute(
-            "INSERT INTO alerts (ip, vector, score, mitigation) VALUES (?, ?, ?, ?)",
+            """
+            INSERT INTO alerts (ip, vector, score, mitigation, status)
+            VALUES (?, ?, ?, ?, ?)
+            """,
             (
                 result.get("ip"),
                 result.get("vector"),
                 result.get("score"),
                 json.dumps(result.get("mitigation", [])),
+                "active",
             ),
         )
         connection.commit()
@@ -129,6 +141,35 @@ def history():
             "SELECT * FROM alerts ORDER BY timestamp DESC"
         ).fetchall()
         return jsonify([dict(row) for row in rows])
+    finally:
+        connection.close()
+
+
+@app.route("/api/resolve/<int:alert_id>", methods=["POST"])
+def resolve_alert(alert_id):
+    connection = sqlite3.connect("siem.db")
+    try:
+        cursor = connection.execute(
+            "UPDATE alerts SET status = 'resolved' WHERE id = ?",
+            (alert_id,),
+        )
+        connection.commit()
+        if cursor.rowcount == 0:
+            return jsonify({"error": "Alert not found."}), 404
+        return jsonify({"message": "Alert resolved.", "id": alert_id})
+    finally:
+        connection.close()
+
+
+@app.route("/api/resolve_all", methods=["POST"])
+def resolve_all():
+    connection = sqlite3.connect("siem.db")
+    try:
+        cursor = connection.execute(
+            "UPDATE alerts SET status = 'resolved' WHERE status != 'resolved'"
+        )
+        connection.commit()
+        return jsonify({"message": "All alerts resolved.", "updated": cursor.rowcount})
     finally:
         connection.close()
 
