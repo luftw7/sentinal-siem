@@ -1,13 +1,23 @@
 import json
 import os
 import sqlite3
+import tempfile
+import uuid
+from datetime import datetime
+
+import boto3
 from flask import Flask, jsonify, render_template, request
 from dotenv import load_dotenv
+from fpdf import FPDF
 
 # NEW: Import the updated SDK
 from google import genai 
 
 load_dotenv()
+
+AWS_ACCESS_KEY_ID = os.environ.get("AWS_ACCESS_KEY_ID")
+AWS_SECRET_ACCESS_KEY = os.environ.get("AWS_SECRET_ACCESS_KEY")
+AWS_BUCKET_NAME = os.environ.get("AWS_BUCKET_NAME")
 
 app = Flask(__name__)
 
@@ -30,6 +40,98 @@ SYSTEM_PROMPT = (
         '] '
     '}'
 )
+
+
+def generate_and_upload_pdf(ip, vector, score, mitigation, log_text):
+    incident_id = uuid.uuid4().hex[:8].upper()
+    analysis_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    temporary_folder = tempfile.mkdtemp()
+    safe_ip = "".join(character if character.isalnum() or character in ".-_" else "_" for character in str(ip))
+    pdf_path = os.path.join(temporary_folder, f"incident_{safe_ip}.pdf")
+    evidence_path = os.path.join(temporary_folder, f"Incident_{incident_id}_Evidence.txt")
+
+    def pdf_text(value):
+        return str(value).encode("latin-1", "replace").decode("latin-1")
+
+    def add_section_heading(pdf, title):
+        pdf.set_fill_color(31, 78, 121)
+        pdf.set_text_color(255, 255, 255)
+        pdf.set_font("Arial", "B", 12)
+        pdf.cell(0, 8, title, ln=1, fill=True)
+        pdf.ln(2)
+        pdf.set_text_color(0, 0, 0)
+
+    try:
+        pdf = FPDF()
+        pdf.set_title("Sentinel SIEM - Automated Incident Report")
+        pdf.set_author("Sentinel SIEM")
+        pdf.add_page()
+
+        pdf.set_text_color(153, 0, 0)
+        pdf.set_font("Arial", "B", 16)
+        pdf.cell(0, 10, "CONFIDENTIAL: SENTINEL SIEM - AUTOMATED INCIDENT REPORT", ln=1)
+        pdf.set_text_color(0, 0, 0)
+        pdf.ln(4)
+
+        add_section_heading(pdf, "Metadata")
+        pdf.set_font("Arial", size=12)
+        pdf.cell(0, 7, f"Date/Time of Analysis: {analysis_time}", ln=1)
+        pdf.cell(0, 7, f"Incident ID: {incident_id}", ln=1)
+        pdf.ln(5)
+
+        severity_label = (
+            "High" if float(score or 0) >= 7
+            else "Medium" if float(score or 0) >= 4
+            else "Low"
+        )
+        add_section_heading(pdf, "Executive Summary")
+        pdf.set_font("Arial", size=12)
+        summary = (
+            f"A {severity_label} severity incident involving {vector} was detected "
+            f"with a score of {score} out of 10. The activity requires review of the "
+            "listed indicators and execution of the recommended mitigation playbook."
+        )
+        pdf.multi_cell(0, 7, pdf_text(summary))
+        pdf.ln(5)
+
+        add_section_heading(pdf, "Indicators of Compromise (IOCs)")
+        pdf.set_font("Arial", size=12)
+        pdf.cell(0, 7, f"Attacker IP: {pdf_text(ip)}", ln=1)
+        pdf.ln(5)
+
+        add_section_heading(pdf, "Mitigation & Playbook")
+        pdf.set_font("Arial", size=12)
+        mitigation_steps = mitigation if isinstance(mitigation, list) else [mitigation]
+        for step in mitigation_steps:
+            pdf.multi_cell(0, 7, pdf_text(f"- {step}"))
+
+        pdf.output(pdf_path)
+        with open(evidence_path, "w", encoding="utf-8") as evidence_file:
+            evidence_file.write(log_text)
+
+        s3 = boto3.client(
+            "s3",
+            aws_access_key_id=AWS_ACCESS_KEY_ID,
+            aws_secret_access_key=AWS_SECRET_ACCESS_KEY,
+        )
+        s3.upload_file(
+            pdf_path,
+            AWS_BUCKET_NAME,
+            f"incidents/Incident_{incident_id}_Report.pdf",
+            ExtraArgs={"ContentType": "application/pdf"},
+        )
+        s3.upload_file(
+            evidence_path,
+            AWS_BUCKET_NAME,
+            f"incidents/Incident_{incident_id}_Evidence.txt",
+            ExtraArgs={"ContentType": "text/plain"},
+        )
+    finally:
+        for path in (pdf_path, evidence_path):
+            if os.path.exists(path):
+                os.remove(path)
+        if os.path.isdir(temporary_folder):
+            os.rmdir(temporary_folder)
 
 
 def init_db():
@@ -128,6 +230,14 @@ def analyze():
         connection.commit()
     finally:
         connection.close()
+
+    generate_and_upload_pdf(
+        result.get("ip"),
+        result.get("vector"),
+        result.get("score"),
+        result.get("mitigation", []),
+        log_text,
+    )
 
     return jsonify(result)
 
