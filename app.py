@@ -1,54 +1,71 @@
 import json
 import os
-
-import google.generativeai as genai
 from flask import Flask, jsonify, render_template, request
 from dotenv import load_dotenv
 
+# NEW: Import the updated SDK
+from google import genai 
+
 load_dotenv()
-genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
 
 app = Flask(__name__)
 
-SYSTEM_PROMPT = (
-	'Analyze this server log. Identify the attacker IP, the attack vector '
-	'(e.g., SQL Injection, Brute Force), a severity score from 1.0 to 10.0, '
-	'and a short mitigation strategy. You MUST return ONLY a valid JSON object '
-	'with the exact keys: "ip", "vector", "score", and "mitigation". Do not '
-	'include markdown formatting or backticks.'
-)
+# NEW: Initialize the GenAI client with the updated SDK
+client = genai.Client(api_key=os.environ.get("GEMINI_API_KEY"))
 
+# UPGRADED PROMPT: Asking for an array for the mitigation steps
+SYSTEM_PROMPT = (
+    'You are an expert SIEM cybersecurity analyst. Analyze these server logs. Find the breach. '
+    'You MUST respond ONLY in valid JSON format. Do not use markdown blocks like ```json. '
+    'Use exactly this structure: '
+    '{ '
+        '"ip": "The attacker\'s IP", '
+        '"vector": "The attack method (e.g., SQL Injection)", '
+        '"score": 9.5, '
+        '"mitigation": [ '
+            '"[CRITICAL] Step 1...", '
+            '"[ACTION] Step 2...", '
+            '"[INFO] Step 3..." '
+        '] '
+    '}'
+)
 
 @app.route("/")
 def index():
-	return render_template("index.html")
-
+    return render_template("index.html")
 
 @app.route("/analyze", methods=["POST"])
 def analyze():
-	file = request.files.get("file")
-	if file is None or file.filename == "":
-		return jsonify({"error": "No file was sent."}), 400
+    # FROM COPILOT: Excellent check for missing files
+    file = request.files.get("file")
+    if file is None or file.filename == "":
+        return jsonify({"error": "No file was sent."}), 400
 
-	try:
-		log_text = file.read().decode("utf-8")
-	except UnicodeDecodeError:
-		return jsonify({"error": "The uploaded file must be a UTF-8 text file."}), 400
+    # FROM COPILOT: Excellent check to make sure it's actually a text file
+    try:
+        log_text = file.read().decode("utf-8")
+    except UnicodeDecodeError:
+        return jsonify({"error": "The uploaded file must be a UTF-8 text file."}), 400
 
-	try:
-		model = genai.GenerativeModel(
-			model_name="gemini-3.8-flash",
-			system_instruction=SYSTEM_PROMPT,
-		)
-		response = model.generate_content(log_text)
-		result = json.loads(response.text)
-	except json.JSONDecodeError:
-		return jsonify({"error": "Gemini returned invalid JSON."}), 502
-	except Exception as error:
-		return jsonify({"error": str(error)}), 500
+    try:
+        # NEW: Using the new SDK syntax to call the model
+        response = client.models.generate_content(
+            model='gemini-1.5-pro',
+            contents=f"{SYSTEM_PROMPT}\n\nLogs:\n{log_text}"
+        )
+        
+        # NEW: Clean the response in case Gemini adds markdown backticks
+        cleaned_json = response.text.replace('```json', '').replace('```', '').strip()
+        
+        # FROM COPILOT: Safely load the JSON
+        result = json.loads(cleaned_json)
+        
+    except json.JSONDecodeError:
+        return jsonify({"error": "Gemini returned invalid JSON."}), 502
+    except Exception as error:
+        return jsonify({"error": str(error)}), 500
 
-	return jsonify(result)
-
+    return jsonify(result)
 
 if __name__ == "__main__":
-	app.run(debug=True, port=5000)
+    app.run(debug=True, port=5000)

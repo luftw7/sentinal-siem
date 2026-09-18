@@ -57,7 +57,6 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
   <style>
     body { background-color: #0f1115; }
-    /* stagger helpers */
     .delay-1 { animation-delay: 0.05s; }
     .delay-2 { animation-delay: 0.12s; }
     .delay-3 { animation-delay: 0.19s; }
@@ -125,7 +124,7 @@
       <header class="pre-anim animate-fade-up delay-1 flex justify-end">
         <div class="flex items-center gap-2 rounded-md border border-line bg-base-800/60 px-3 py-1.5 text-xs text-muted">
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" class="h-3.5 w-3.5"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
-          Status: Standing By
+          <span id="topRightStatus">Status: Standing By</span>
         </div>
       </header>
 
@@ -142,7 +141,7 @@
       <section class="pre-anim animate-fade-up delay-2 mt-7">
         <label id="dropzone"
           class="group flex cursor-pointer flex-col items-center justify-center rounded-xl border border-dashed border-line bg-base-800/40 px-6 py-14 text-center transition-all duration-300 hover:scale-[1.02] hover:border-accent hover:bg-accent-dim">
-          <input id="fileInput" type="file" accept=".txt" class="hidden" />
+          <input id="fileInput" type="file" accept=".txt,.log" class="hidden" />
           <div class="flex h-12 w-12 items-center justify-center rounded-full border border-line bg-base-700 text-muted transition-colors duration-300 group-hover:border-accent/60 group-hover:text-accent-soft">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" class="h-5 w-5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M17 8l-5-5-5 5"/><path d="M12 3v12"/></svg>
           </div>
@@ -151,6 +150,7 @@
           </p>
           <p class="mt-1 text-xs text-faint">or click to browse &middot; max 25&nbsp;MB per file</p>
           <p id="fileName" class="mt-4 hidden rounded-md border border-line bg-base-900/60 px-3 py-1.5 font-mono text-xs text-emerald-300"></p>
+          <p id="analysisTime" class="mt-3 text-xs text-faint">Analysis Time: --s</p>
         </label>
       </section>
 
@@ -162,10 +162,10 @@
             <p class="text-xs font-medium uppercase tracking-wider text-faint">Origin IP</p>
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4 text-faint"><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
           </div>
-          <p class="mt-4 font-mono text-2xl font-medium tracking-tight text-slate-100">185.220.101.44</p>
+          <p id="originIp" class="mt-4 font-mono text-2xl font-medium tracking-tight text-slate-100">---.---.---.---</p>
           <p class="mt-2 flex items-center gap-1.5 text-xs text-muted">
-            <span class="inline-block h-1.5 w-1.5 rounded-full bg-alert"></span>
-            Flagged &middot; Rotterdam, NL
+            <span class="inline-block h-1.5 w-1.5 rounded-full bg-faint"></span>
+            Awaiting ingest...
           </p>
         </article>
 
@@ -175,10 +175,10 @@
             <p class="text-xs font-medium uppercase tracking-wider text-faint">Attack Vector</p>
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4 text-faint"><path d="M4 4v16"/><path d="M4 4h11l-2 4 2 4H4"/></svg>
           </div>
-          <p class="mt-4 text-2xl font-medium tracking-tight text-slate-100">Credential Stuffing</p>
+          <p id="attackVector" class="mt-4 text-2xl font-medium tracking-tight text-slate-100">Waiting for telemetry...</p>
           <p class="mt-2 flex items-center gap-1.5 text-xs text-muted">
-            <span class="inline-block h-1.5 w-1.5 rounded-full bg-accent-soft"></span>
-            T1110.004 &middot; 3,401 attempts
+            <span class="inline-block h-1.5 w-1.5 rounded-full bg-faint"></span>
+            No indicators detected
           </p>
         </article>
 
@@ -189,11 +189,11 @@
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4 text-faint"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
           </div>
           <div class="mt-4 flex items-baseline gap-2">
-            <p class="text-2xl font-medium tracking-tight text-alert-soft">8.7</p>
-            <span class="rounded border border-alert/30 bg-alert-dim px-1.5 py-0.5 text-[11px] font-medium uppercase tracking-wide text-alert-soft">High</span>
+            <p id="severityScore" class="text-2xl font-medium tracking-tight text-alert-soft">0.0</p>
+            <span class="rounded border border-line/30 bg-base-900/50 px-1.5 py-0.5 text-[11px] font-medium uppercase tracking-wide text-faint">/ 10</span>
           </div>
           <div class="mt-3 h-1.5 w-full overflow-hidden rounded-full bg-base-700">
-            <div class="h-full rounded-full bg-alert/70" style="width: 87%"></div>
+            <div id="severityBar" class="h-full rounded-full bg-alert/70 transition-all duration-1000 ease-out" style="width: 0%"></div>
           </div>
         </article>
       </section>
@@ -210,18 +210,7 @@
             </div>
             <span class="font-mono text-[11px] text-faint">sentinel@core:~</span>
           </div>
-          <pre class="overflow-x-auto px-5 py-4 font-mono text-[13px] leading-relaxed text-slate-300"><span class="text-faint">$</span> sentinel analyze --incident 0x4F2A --recommend
-<span class="text-accent-soft">[info]</span>  Correlated 3,401 auth failures against 42 accounts.
-<span class="text-accent-soft">[info]</span>  Source ASN AS200651 previously observed in botnet activity.
-<span class="text-alert-soft">[warn]</span>  2 accounts show successful login post-lockout window.
-
-<span class="text-slate-100">Recommended mitigation:</span>
-  1. Block <span class="text-slate-100">185.220.101.44/32</span> at the edge WAF (immediate).
-  2. Force credential reset for the 2 compromised accounts.
-  3. Enforce MFA challenge on the affected auth realm.
-  4. Enable adaptive rate limiting on /api/login (5 req/min).
-
-<span class="text-emerald-300">[done]</span>  Report exported &rarr; incidents/0x4F2A.pdf<span class="ml-0.5 inline-block h-4 w-2 animate-pulse-dot bg-slate-400 align-middle"></span></pre>
+          <pre id="mitigationAnalysis" class="overflow-x-auto px-5 py-4 font-mono text-[13px] leading-relaxed text-slate-300">&gt; Awaiting log telemetry...<span class="ml-0.5 inline-block h-4 w-2 animate-pulse-dot bg-slate-400 align-middle"></span></pre>
         </div>
       </section>
 
@@ -253,9 +242,9 @@
             class="w-full rounded-md border border-line bg-base-800/60 py-2 pl-9 pr-3 text-sm text-slate-100 placeholder:text-faint transition-colors focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent/40" />
         </div>
         <div class="flex items-center gap-2 text-xs text-muted">
-          <span class="rounded-md border border-line bg-base-800/60 px-2.5 py-1.5 font-mono">4 sources</span>
+          <span class="rounded-md border border-line bg-base-800/60 px-2.5 py-1.5 font-mono">0 sources</span>
           <span class="hidden sm:inline">&middot;</span>
-          <span class="hidden sm:inline">Last sync 2m ago</span>
+          <span class="hidden sm:inline">Last sync --</span>
         </div>
       </div>
 
@@ -272,129 +261,9 @@
                 <th scope="col" class="px-6 py-3.5 text-right font-medium">Actions</th>
               </tr>
             </thead>
-            <tbody class="divide-y divide-line/70">
-              <!-- Row 1 -->
-              <tr class="group transition-colors hover:bg-base-700/40">
-                <td class="px-6 py-4">
-                  <div class="flex items-center gap-3">
-                    <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-base-900/70 ring-1 ring-inset ring-line">
-                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4 text-muted"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5z"/><path d="M14 2v6h6"/></svg>
-                    </div>
-                    <span class="font-mono text-[13px] text-slate-100">apache_error.log</span>
-                  </div>
-                </td>
-                <td class="px-6 py-4 text-muted">Today 09:42 AM</td>
-                <td class="px-6 py-4">
-                  <span class="inline-flex items-center gap-1.5 text-muted">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" class="h-3.5 w-3.5 text-faint"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v14a9 3 0 0 0 18 0V5"/><path d="M3 12a9 3 0 0 0 18 0"/></svg>
-                    AWS S3 (us-east-1)
-                  </span>
-                </td>
-                <td class="px-6 py-4">
-                  <span class="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/25 bg-emerald-500/10 px-2.5 py-1 text-xs font-medium text-emerald-300">
-                    <span class="h-1.5 w-1.5 rounded-full bg-emerald-400"></span>
-                    Analyzed
-                  </span>
-                </td>
-                <td class="px-6 py-4 text-right">
-                  <button type="button" aria-label="View apache_error.log"
-                    class="inline-flex h-8 w-8 items-center justify-center rounded-md text-faint transition-colors hover:bg-base-600/60 hover:text-accent-soft focus:outline-none focus:ring-1 focus:ring-accent/40">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
-                  </button>
-                </td>
-              </tr>
-
-              <!-- Row 2 -->
-              <tr class="group transition-colors hover:bg-base-700/40">
-                <td class="px-6 py-4">
-                  <div class="flex items-center gap-3">
-                    <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-base-900/70 ring-1 ring-inset ring-line">
-                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4 text-muted"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5z"/><path d="M14 2v6h6"/></svg>
-                    </div>
-                    <span class="font-mono text-[13px] text-slate-100">auth_syslog.log</span>
-                  </div>
-                </td>
-                <td class="px-6 py-4 text-muted">Today 08:15 AM</td>
-                <td class="px-6 py-4">
-                  <span class="inline-flex items-center gap-1.5 text-muted">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" class="h-3.5 w-3.5 text-faint"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v14a9 3 0 0 0 18 0V5"/><path d="M3 12a9 3 0 0 0 18 0"/></svg>
-                    AWS S3 (us-east-1)
-                  </span>
-                </td>
-                <td class="px-6 py-4">
-                  <span class="inline-flex items-center gap-1.5 rounded-full border border-accent/30 bg-accent/10 px-2.5 py-1 text-xs font-medium text-accent-soft">
-                    <span class="h-1.5 w-1.5 animate-pulse-dot rounded-full bg-accent-soft"></span>
-                    Analyzing
-                  </span>
-                </td>
-                <td class="px-6 py-4 text-right">
-                  <button type="button" aria-label="View auth_syslog.log"
-                    class="inline-flex h-8 w-8 items-center justify-center rounded-md text-faint transition-colors hover:bg-base-600/60 hover:text-accent-soft focus:outline-none focus:ring-1 focus:ring-accent/40">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
-                  </button>
-                </td>
-              </tr>
-
-              <!-- Row 3 -->
-              <tr class="group transition-colors hover:bg-base-700/40">
-                <td class="px-6 py-4">
-                  <div class="flex items-center gap-3">
-                    <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-base-900/70 ring-1 ring-inset ring-line">
-                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4 text-muted"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5z"/><path d="M14 2v6h6"/></svg>
-                    </div>
-                    <span class="font-mono text-[13px] text-slate-100">nginx_access.log</span>
-                  </div>
-                </td>
-                <td class="px-6 py-4 text-muted">Yesterday 11:20 PM</td>
-                <td class="px-6 py-4">
-                  <span class="inline-flex items-center gap-1.5 text-muted">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" class="h-3.5 w-3.5 text-faint"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v14a9 3 0 0 0 18 0V5"/><path d="M3 12a9 3 0 0 0 18 0"/></svg>
-                    AWS S3 (us-west-2)
-                  </span>
-                </td>
-                <td class="px-6 py-4">
-                  <span class="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/25 bg-emerald-500/10 px-2.5 py-1 text-xs font-medium text-emerald-300">
-                    <span class="h-1.5 w-1.5 rounded-full bg-emerald-400"></span>
-                    Analyzed
-                  </span>
-                </td>
-                <td class="px-6 py-4 text-right">
-                  <button type="button" aria-label="View nginx_access.log"
-                    class="inline-flex h-8 w-8 items-center justify-center rounded-md text-faint transition-colors hover:bg-base-600/60 hover:text-accent-soft focus:outline-none focus:ring-1 focus:ring-accent/40">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
-                  </button>
-                </td>
-              </tr>
-
-              <!-- Row 4 -->
-              <tr class="group transition-colors hover:bg-base-700/40">
-                <td class="px-6 py-4">
-                  <div class="flex items-center gap-3">
-                    <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-base-900/70 ring-1 ring-inset ring-line">
-                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4 text-muted"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5z"/><path d="M14 2v6h6"/></svg>
-                    </div>
-                    <span class="font-mono text-[13px] text-slate-100">firewall_deny.log</span>
-                  </div>
-                </td>
-                <td class="px-6 py-4 text-muted">Yesterday 06:03 PM</td>
-                <td class="px-6 py-4">
-                  <span class="inline-flex items-center gap-1.5 text-muted">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" class="h-3.5 w-3.5 text-faint"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v14a9 3 0 0 0 18 0V5"/><path d="M3 12a9 3 0 0 0 18 0"/></svg>
-                    Local Ingest Node
-                  </span>
-                </td>
-                <td class="px-6 py-4">
-                  <span class="inline-flex items-center gap-1.5 rounded-full border border-alert/30 bg-alert/10 px-2.5 py-1 text-xs font-medium text-alert-soft">
-                    <span class="h-1.5 w-1.5 rounded-full bg-alert-soft"></span>
-                    Failed
-                  </span>
-                </td>
-                <td class="px-6 py-4 text-right">
-                  <button type="button" aria-label="View firewall_deny.log"
-                    class="inline-flex h-8 w-8 items-center justify-center rounded-md text-faint transition-colors hover:bg-base-600/60 hover:text-accent-soft focus:outline-none focus:ring-1 focus:ring-accent/40">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
-                  </button>
-                </td>
+            <tbody class="divide-y divide-line/70 text-center">
+              <tr>
+                <td colspan="5" class="px-6 py-8 text-muted">No telemetry sources connected.</td>
               </tr>
             </tbody>
           </table>
@@ -403,8 +272,6 @@
       </div>
 
       <div id="alerts-view" class="view hidden">
-        <!-- Header -->
-         <div id="alerts-view" class="view hidden">
         <!-- Header -->
         <header class="pre-anim animate-fade-up delay-1 flex flex-wrap items-end justify-between gap-4">
           <div>
@@ -420,26 +287,26 @@
 
         <!-- Severity summary -->
         <div class="pre-anim animate-fade-up delay-2 mt-7 grid grid-cols-1 gap-3 sm:grid-cols-3">
-          <div class="rounded-xl border border-alert/25 bg-alert/[0.06] px-4 py-3.5">
+          <div class="rounded-xl border border-alert/25 bg-alert/[0.06] px-4 py-3.5 opacity-50">
             <div class="flex items-center justify-between">
               <span class="text-xs font-medium uppercase tracking-wider text-alert-soft">High</span>
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4 text-alert"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>
             </div>
-            <p class="mt-2 font-mono text-2xl font-semibold text-slate-100">3</p>
+            <p class="mt-2 font-mono text-2xl font-semibold text-slate-100">0</p>
           </div>
-          <div class="rounded-xl border border-warn/25 bg-warn/[0.06] px-4 py-3.5">
+          <div class="rounded-xl border border-warn/25 bg-warn/[0.06] px-4 py-3.5 opacity-50">
             <div class="flex items-center justify-between">
               <span class="text-xs font-medium uppercase tracking-wider text-warn-soft">Medium</span>
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4 text-warn"><circle cx="12" cy="12" r="10"/><path d="M12 8v4"/><path d="M12 16h.01"/></svg>
             </div>
-            <p class="mt-2 font-mono text-2xl font-semibold text-slate-100">2</p>
+            <p class="mt-2 font-mono text-2xl font-semibold text-slate-100">0</p>
           </div>
-          <div class="rounded-xl border border-line bg-base-800/50 px-4 py-3.5">
+          <div class="rounded-xl border border-line bg-base-800/50 px-4 py-3.5 opacity-50">
             <div class="flex items-center justify-between">
               <span class="text-xs font-medium uppercase tracking-wider text-muted">Low</span>
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4 text-faint"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>
             </div>
-            <p class="mt-2 font-mono text-2xl font-semibold text-slate-100">5</p>
+            <p class="mt-2 font-mono text-2xl font-semibold text-slate-100">0</p>
           </div>
         </div>
 
@@ -473,116 +340,12 @@
         <section class="pre-anim animate-fade-up delay-4 mt-4 overflow-hidden rounded-xl border border-line bg-base-800/50">
           <div class="flex items-center justify-between border-b border-line px-5 py-3.5">
             <h2 class="text-sm font-semibold tracking-tight text-slate-100">Threat History</h2>
-            <span class="font-mono text-[11px] text-faint">6 events</span>
+            <span class="font-mono text-[11px] text-faint">0 events</span>
           </div>
-
-          <div class="overflow-x-auto">
-            <table class="w-full min-w-205 text-left text-sm">
-              <thead>
-                <tr class="border-b border-line text-[11px] font-medium uppercase tracking-wider text-faint">
-                  <th scope="col" class="px-5 py-2.5 font-medium">Timestamp</th>
-                  <th scope="col" class="px-4 py-2.5 font-medium">Severity</th>
-                  <th scope="col" class="px-4 py-2.5 font-medium">Attack Vector</th>
-                  <th scope="col" class="px-4 py-2.5 font-medium">Target IP</th>
-                  <th scope="col" class="py-2.5 pl-4 pr-5 text-right font-medium">Action</th>
-                </tr>
-              </thead>
-              <tbody class="divide-y divide-line/70">
-                <!-- High -->
-                <tr class="bg-alert/[0.04] transition-colors hover:bg-alert/[0.08]">
-                  <td class="whitespace-nowrap px-5 py-3.5 font-mono text-xs text-muted">10:42 AM</td>
-                  <td class="px-4 py-3.5">
-                    <span class="inline-flex items-center rounded-full border border-alert/30 bg-alert/15 px-2.5 py-0.5 text-[11px] font-semibold uppercase tracking-wider text-alert-soft">High</span>
-                  </td>
-                  <td class="px-4 py-3.5 font-medium text-slate-100">SQL Injection Attempt</td>
-                  <td class="whitespace-nowrap px-4 py-3.5 font-mono text-xs text-muted">192.168.1.45</td>
-                  <td class="py-3.5 pl-4 pr-5 text-right">
-                    <button type="button" class="inline-flex items-center gap-1.5 rounded-md border border-line bg-base-700/50 px-2.5 py-1.5 text-xs font-medium text-slate-200 transition-all duration-200 hover:border-accent/40 hover:bg-accent/10 hover:text-accent-soft focus:outline-none focus:ring-1 focus:ring-accent/40 active:scale-[0.97]">
-                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" class="h-3.5 w-3.5"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg>
-                      View Details
-                    </button>
-                  </td>
-                </tr>
-                <!-- High -->
-                <tr class="bg-alert/[0.04] transition-colors hover:bg-alert/[0.08]">
-                  <td class="whitespace-nowrap px-5 py-3.5 font-mono text-xs text-muted">09:15 AM</td>
-                  <td class="px-4 py-3.5">
-                    <span class="inline-flex items-center rounded-full border border-alert/30 bg-alert/15 px-2.5 py-0.5 text-[11px] font-semibold uppercase tracking-wider text-alert-soft">High</span>
-                  </td>
-                  <td class="px-4 py-3.5 font-medium text-slate-100">Brute Force Authentication</td>
-                  <td class="whitespace-nowrap px-4 py-3.5 font-mono text-xs text-muted">10.0.4.12</td>
-                  <td class="py-3.5 pl-4 pr-5 text-right">
-                    <button type="button" class="inline-flex items-center gap-1.5 rounded-md border border-line bg-base-700/50 px-2.5 py-1.5 text-xs font-medium text-slate-200 transition-all duration-200 hover:border-accent/40 hover:bg-accent/10 hover:text-accent-soft focus:outline-none focus:ring-1 focus:ring-accent/40 active:scale-[0.97]">
-                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" class="h-3.5 w-3.5"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg>
-                      View Details
-                    </button>
-                  </td>
-                </tr>
-                <!-- High -->
-                <tr class="bg-alert/[0.04] transition-colors hover:bg-alert/[0.08]">
-                  <td class="whitespace-nowrap px-5 py-3.5 font-mono text-xs text-muted">08:33 AM</td>
-                  <td class="px-4 py-3.5">
-                    <span class="inline-flex items-center rounded-full border border-alert/30 bg-alert/15 px-2.5 py-0.5 text-[11px] font-semibold uppercase tracking-wider text-alert-soft">High</span>
-                  </td>
-                  <td class="px-4 py-3.5 font-medium text-slate-100">Privilege Escalation</td>
-                  <td class="whitespace-nowrap px-4 py-3.5 font-mono text-xs text-muted">10.0.7.22</td>
-                  <td class="py-3.5 pl-4 pr-5 text-right">
-                    <button type="button" class="inline-flex items-center gap-1.5 rounded-md border border-line bg-base-700/50 px-2.5 py-1.5 text-xs font-medium text-slate-200 transition-all duration-200 hover:border-accent/40 hover:bg-accent/10 hover:text-accent-soft focus:outline-none focus:ring-1 focus:ring-accent/40 active:scale-[0.97]">
-                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" class="h-3.5 w-3.5"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg>
-                      View Details
-                    </button>
-                  </td>
-                </tr>
-                <!-- Medium -->
-                <tr class="transition-colors hover:bg-base-700/40">
-                  <td class="whitespace-nowrap px-5 py-3.5 font-mono text-xs text-muted">08:51 AM</td>
-                  <td class="px-4 py-3.5">
-                    <span class="inline-flex items-center rounded-full border border-warn/30 bg-warn/15 px-2.5 py-0.5 text-[11px] font-semibold uppercase tracking-wider text-warn-soft">Medium</span>
-                  </td>
-                  <td class="px-4 py-3.5 font-medium text-slate-100">Suspicious Port Scan</td>
-                  <td class="whitespace-nowrap px-4 py-3.5 font-mono text-xs text-muted">172.16.0.8</td>
-                  <td class="py-3.5 pl-4 pr-5 text-right">
-                    <button type="button" class="inline-flex items-center gap-1.5 rounded-md border border-line bg-base-700/50 px-2.5 py-1.5 text-xs font-medium text-slate-200 transition-all duration-200 hover:border-accent/40 hover:bg-accent/10 hover:text-accent-soft focus:outline-none focus:ring-1 focus:ring-accent/40 active:scale-[0.97]">
-                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" class="h-3.5 w-3.5"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg>
-                      View Details
-                    </button>
-                  </td>
-                </tr>
-                <!-- Medium -->
-                <tr class="transition-colors hover:bg-base-700/40">
-                  <td class="whitespace-nowrap px-5 py-3.5 font-mono text-xs text-muted">Yesterday 11:47 PM</td>
-                  <td class="px-4 py-3.5">
-                    <span class="inline-flex items-center rounded-full border border-warn/30 bg-warn/15 px-2.5 py-0.5 text-[11px] font-semibold uppercase tracking-wider text-warn-soft">Medium</span>
-                  </td>
-                  <td class="px-4 py-3.5 font-medium text-slate-100">Unusual Data Egress</td>
-                  <td class="whitespace-nowrap px-4 py-3.5 font-mono text-xs text-muted">10.0.9.31</td>
-                  <td class="py-3.5 pl-4 pr-5 text-right">
-                    <button type="button" class="inline-flex items-center gap-1.5 rounded-md border border-line bg-base-700/50 px-2.5 py-1.5 text-xs font-medium text-slate-200 transition-all duration-200 hover:border-accent/40 hover:bg-accent/10 hover:text-accent-soft focus:outline-none focus:ring-1 focus:ring-accent/40 active:scale-[0.97]">
-                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" class="h-3.5 w-3.5"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg>
-                      View Details
-                    </button>
-                  </td>
-                </tr>
-                <!-- Low -->
-                <tr class="transition-colors hover:bg-base-700/40">
-                  <td class="whitespace-nowrap px-5 py-3.5 font-mono text-xs text-muted">Yesterday 04:20 PM</td>
-                  <td class="px-4 py-3.5">
-                    <span class="inline-flex items-center rounded-full border border-line bg-base-700/60 px-2.5 py-0.5 text-[11px] font-semibold uppercase tracking-wider text-muted">Low</span>
-                  </td>
-                  <td class="px-4 py-3.5 font-medium text-slate-100">Expired TLS Certificate</td>
-                  <td class="whitespace-nowrap px-4 py-3.5 font-mono text-xs text-muted">10.0.2.5</td>
-                  <td class="py-3.5 pl-4 pr-5 text-right">
-                    <button type="button" class="inline-flex items-center gap-1.5 rounded-md border border-line bg-base-700/50 px-2.5 py-1.5 text-xs font-medium text-slate-200 transition-all duration-200 hover:border-accent/40 hover:bg-accent/10 hover:text-accent-soft focus:outline-none focus:ring-1 focus:ring-accent/40 active:scale-[0.97]">
-                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" class="h-3.5 w-3.5"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg>
-                      View Details
-                    </button>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
+          <div class="overflow-x-auto text-center">
+            <p class="px-6 py-8 text-sm text-muted">No security alerts detected in current telemetry.</p>
           </div>
         </section>
-      </div>
       </div>
 
       <div id="settings-view" class="view hidden">
@@ -702,18 +465,82 @@
       });
     });
 
-    // Minimal client interactivity for the upload zone (drag-drop + filename echo)
     const dropzone = document.getElementById('dropzone');
     const fileInput = document.getElementById('fileInput');
     const fileName = document.getElementById('fileName');
+    const topRightStatus = document.getElementById('topRightStatus');
 
     function showFile(name) {
       fileName.textContent = '\u2713 ' + name;
       fileName.classList.remove('hidden');
     }
 
+    const analysisTime = document.getElementById('analysisTime');
+    const originIp = document.getElementById('originIp');
+    const attackVector = document.getElementById('attackVector');
+    const severityScore = document.getElementById('severityScore');
+    const severityBar = document.getElementById('severityBar');
+    const mitigationAnalysis = document.getElementById('mitigationAnalysis');
+
+    async function analyzeFile(file) {
+      showFile(file.name);
+      
+      // Starting state
+      analysisTime.textContent = 'Status: Analyzing...';
+      topRightStatus.textContent = 'Status: Analyzing...';
+      mitigationAnalysis.innerHTML = '> Transmitting telemetry to AI analysis core...<br><span class="ml-0.5 inline-block h-4 w-2 animate-pulse-dot bg-slate-400 align-middle"></span>';
+
+      const formData = new FormData();
+      formData.append('file', file);
+
+      try {
+        const response = await fetch('/analyze', {
+          method: 'POST',
+          body: formData,
+        });
+        const result = await response.json();
+
+        if (!response.ok) {
+          throw new Error(result.error || 'Analysis failed.');
+        }
+
+        // Apply returned data to UI
+        originIp.textContent = result.ip || '---.---.---.---';
+        attackVector.textContent = result.vector || 'Unknown Vector';
+        
+        // Calculate dynamic width for the severity progress bar (Score out of 10)
+        let scoreVal = parseFloat(result.score) || 0;
+        severityScore.textContent = scoreVal;
+        let percentage = Math.min((scoreVal / 10) * 100, 100);
+        severityBar.style.width = percentage + '%';
+
+        // Loop through the new array from Python
+        mitigationAnalysis.innerHTML = '';
+        if (Array.isArray(result.mitigation)) {
+            result.mitigation.forEach(step => {
+                mitigationAnalysis.innerHTML += `> ${step}<br>`;
+            });
+        } else {
+            // Fallback just in case Gemini sends a single string
+            mitigationAnalysis.innerHTML = `> ${result.mitigation}<br>`;
+        }
+        
+        // Add the blinking cursor back to the end
+        mitigationAnalysis.innerHTML += '<span class="ml-0.5 inline-block h-4 w-2 animate-pulse-dot bg-slate-400 align-middle"></span>';
+        
+        // Ending state
+        analysisTime.textContent = 'Status: Analysis Complete';
+        topRightStatus.textContent = 'Status: Analysis Complete';
+        
+      } catch (error) {
+        analysisTime.textContent = 'Status: Analysis Failed';
+        topRightStatus.textContent = 'Status: Analysis Failed';
+        mitigationAnalysis.innerHTML = `> [ERROR] ${error.message}<br><span class="ml-0.5 inline-block h-4 w-2 animate-pulse-dot bg-slate-400 align-middle"></span>`;
+      }
+    }
+
     fileInput.addEventListener('change', function () {
-      if (fileInput.files.length) showFile(fileInput.files[0].name);
+      if (fileInput.files.length) analyzeFile(fileInput.files[0]);
     });
 
     ['dragenter', 'dragover'].forEach(function (evt) {
@@ -734,12 +561,11 @@
       const files = e.dataTransfer.files;
       if (files.length) {
         fileInput.files = files;
-        showFile(files[0].name);
+        analyzeFile(files[0]);
       }
     });
   </script>
   <script>
-    // Toggle password visibility per field
     document.querySelectorAll('[data-toggle]').forEach(function (btn) {
       btn.addEventListener('click', function () {
         var input = document.getElementById(btn.getAttribute('data-toggle'));
@@ -757,7 +583,6 @@
       });
     });
 
-    // Save handler (front-end feedback; wire to your Flask route)
     var form = document.getElementById('configForm');
     var status = document.getElementById('statusMsg');
     form.addEventListener('submit', function (e) {
