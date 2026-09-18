@@ -48,11 +48,27 @@ def analyze():
         return jsonify({"error": "The uploaded file must be a UTF-8 text file."}), 400
 
     try:
-        # NEW: Using the new SDK syntax to call the model
-        response = client.models.generate_content(
-            model='gemini-1.5-pro',
-            contents=f"{SYSTEM_PROMPT}\n\nLogs:\n{log_text}"
-        )
+        contents = f"{SYSTEM_PROMPT}\n\nLogs:\n{log_text}"
+        try:
+            response = client.models.generate_content(
+                model="gemini-3.8-flash",
+                contents=contents,
+            )
+        except Exception as error:
+            error_code = getattr(error, "code", None) or getattr(error, "status_code", None)
+            error_text = str(error).upper()
+            is_unavailable = (
+                error_code == 503
+                or "503" in error_text
+                or "UNAVAILABLE" in error_text
+            )
+            if not is_unavailable:
+                raise
+
+            response = client.models.generate_content(
+                model="gemini-3.5-flash-lite",
+                contents=contents,
+            )
         
         # NEW: Clean the response in case Gemini adds markdown backticks
         cleaned_json = response.text.replace('```json', '').replace('```', '').strip()

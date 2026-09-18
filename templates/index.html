@@ -69,7 +69,7 @@
     ::-webkit-scrollbar-thumb:hover { background: #363d4b; }
   </style>
 </head>
-<body class="font-sans text-slate-200 antialiased selection:bg-accent/30">
+<body class="overflow-x-hidden font-sans text-slate-200 antialiased selection:bg-accent/30">
   <div class="flex min-h-screen">
 
     <!-- Sidebar -->
@@ -200,7 +200,7 @@
 
       <!-- Mitigation Analysis terminal -->
       <section class="pre-anim animate-fade-up delay-5 mt-6">
-        <div class="overflow-hidden rounded-xl border border-line bg-base-900/70">
+        <div class="overflow-x-auto overflow-hidden rounded-xl border border-line bg-base-900/70">
           <div class="flex items-center justify-between border-b border-line bg-base-800/60 px-4 py-2.5">
             <div class="flex items-center gap-2">
               <span class="h-2.5 w-2.5 rounded-full bg-alert/50"></span>
@@ -210,7 +210,7 @@
             </div>
             <span class="font-mono text-[11px] text-faint">sentinel@core:~</span>
           </div>
-          <pre id="mitigationAnalysis" class="overflow-x-auto px-5 py-4 font-mono text-[13px] leading-relaxed text-slate-300">&gt; Awaiting log telemetry...<span class="ml-0.5 inline-block h-4 w-2 animate-pulse-dot bg-slate-400 align-middle"></span></pre>
+          <pre id="mitigationAnalysis" class="overflow-x-auto whitespace-pre-wrap break-words px-5 py-4 font-mono text-[13px] leading-relaxed text-slate-300">&gt; Awaiting log telemetry...<span class="ml-0.5 inline-block h-4 w-2 animate-pulse-dot bg-slate-400 align-middle"></span></pre>
         </div>
       </section>
 
@@ -514,16 +514,13 @@
         let percentage = Math.min((scoreVal / 10) * 100, 100);
         severityBar.style.width = percentage + '%';
 
-        // Loop through the new array from Python
+        // Render each mitigation step as its own terminal line.
         mitigationAnalysis.innerHTML = '';
-        if (Array.isArray(result.mitigation)) {
-            result.mitigation.forEach(step => {
-                mitigationAnalysis.innerHTML += `> ${step}<br>`;
-            });
-        } else {
-            // Fallback just in case Gemini sends a single string
-            mitigationAnalysis.innerHTML = `> ${result.mitigation}<br>`;
-        }
+        result.mitigation.forEach(function (step) {
+          const line = document.createElement('div');
+          line.textContent = '> ' + step;
+          mitigationAnalysis.appendChild(line);
+        });
         
         // Add the blinking cursor back to the end
         mitigationAnalysis.innerHTML += '<span class="ml-0.5 inline-block h-4 w-2 animate-pulse-dot bg-slate-400 align-middle"></span>';
