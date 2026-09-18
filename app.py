@@ -1,5 +1,6 @@
 import json
 import os
+import sqlite3
 from flask import Flask, jsonify, render_template, request
 from dotenv import load_dotenv
 
@@ -29,6 +30,26 @@ SYSTEM_PROMPT = (
         '] '
     '}'
 )
+
+
+def init_db():
+    connection = sqlite3.connect("siem.db")
+    try:
+        connection.execute(
+            """
+            CREATE TABLE IF NOT EXISTS alerts (
+                id INTEGER PRIMARY KEY,
+                ip TEXT,
+                vector TEXT,
+                score REAL,
+                mitigation TEXT,
+                timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
+            )
+            """
+        )
+        connection.commit()
+    finally:
+        connection.close()
 
 @app.route("/")
 def index():
@@ -81,7 +102,36 @@ def analyze():
     except Exception as error:
         return jsonify({"error": str(error)}), 500
 
+    connection = sqlite3.connect("siem.db")
+    try:
+        connection.execute(
+            "INSERT INTO alerts (ip, vector, score, mitigation) VALUES (?, ?, ?, ?)",
+            (
+                result.get("ip"),
+                result.get("vector"),
+                result.get("score"),
+                json.dumps(result.get("mitigation", [])),
+            ),
+        )
+        connection.commit()
+    finally:
+        connection.close()
+
     return jsonify(result)
 
+
+@app.route("/api/history", methods=["GET"])
+def history():
+    connection = sqlite3.connect("siem.db")
+    connection.row_factory = sqlite3.Row
+    try:
+        rows = connection.execute(
+            "SELECT * FROM alerts ORDER BY timestamp DESC"
+        ).fetchall()
+        return jsonify([dict(row) for row in rows])
+    finally:
+        connection.close()
+
 if __name__ == "__main__":
+    init_db()
     app.run(debug=True, port=5000)
