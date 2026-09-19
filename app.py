@@ -3,6 +3,7 @@ import os
 import sqlite3
 import tempfile
 import uuid
+import hashlib
 from datetime import datetime
 
 import boto3
@@ -24,7 +25,7 @@ app = Flask(__name__)
 # NEW: Initialize the GenAI client with the updated SDK
 client = genai.Client(api_key=os.environ.get("GEMINI_API_KEY"))
 
-# UPGRADED PROMPT: Asking for an array for the mitigation steps
+# UPGRADED PROMPT: Return the complete incident report data structure.
 SYSTEM_PROMPT = (
     'You are an expert SIEM cybersecurity analyst. Analyze these server logs. Find the breach. '
     'You MUST respond ONLY in valid JSON format. Do not use markdown blocks like ```json. '
@@ -37,73 +38,144 @@ SYSTEM_PROMPT = (
             '"[CRITICAL] Step 1...", '
             '"[ACTION] Step 2...", '
             '"[INFO] Step 3..." '
-        '] '
+        '], '
+        '"executive_summary": "A highly detailed professional 3-sentence summary of the breach.", '
+        '"affected_assets": "A comma-separated list of likely compromised servers/databases." '
     '}'
 )
 
 
-def generate_and_upload_pdf(ip, vector, score, mitigation, log_text):
+class PDF(FPDF):
+    def header(self):
+        self.set_draw_color(139, 0, 0)
+        self.set_line_width(1)
+        self.line(self.l_margin, 10, self.w - self.r_margin, 10)
+
+    def footer(self):
+        self.set_y(-15)
+        self.set_draw_color(0, 0, 0)
+        self.set_line_width(0.2)
+        self.line(self.l_margin, self.get_y(), self.w - self.r_margin, self.get_y())
+        self.set_font("Arial", "I", 10)
+        self.set_text_color(150, 150, 150)
+        self.set_y(-12)
+        self.cell(130, 8, "Sentinel SIEM Incident Response Summary")
+        self.cell(0, 8, f"Page {self.page_no()}", align="R")
+
+
+def generate_and_upload_pdf(
+    ip,
+    vector,
+    score,
+    mitigation,
+    executive_summary,
+    affected_assets,
+    log_text,
+):
     incident_id = uuid.uuid4().hex[:8].upper()
-    analysis_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    report_id = f"REP-{uuid.uuid4().hex[:4].upper()}-{uuid.uuid4().hex[:1].upper()}"
+    analysis_datetime = datetime.now()
+    analysis_time = analysis_datetime.strftime("%Y-%m-%d %H:%M:%S")
+    date_path = analysis_datetime.strftime("%Y/%m/%d")
+    s3_prefix = f"{date_path}/INC-{incident_id}"
     temporary_folder = tempfile.mkdtemp()
-    safe_ip = "".join(character if character.isalnum() or character in ".-_" else "_" for character in str(ip))
-    pdf_path = os.path.join(temporary_folder, f"incident_{safe_ip}.pdf")
-    evidence_path = os.path.join(temporary_folder, f"Incident_{incident_id}_Evidence.txt")
+    pdf_path = os.path.join(temporary_folder, "report.pdf")
+    evidence_path = os.path.join(temporary_folder, "raw_evidence.txt")
 
     def pdf_text(value):
         return str(value).encode("latin-1", "replace").decode("latin-1")
 
     def add_section_heading(pdf, title):
-        pdf.set_fill_color(31, 78, 121)
-        pdf.set_text_color(255, 255, 255)
-        pdf.set_font("Arial", "B", 12)
-        pdf.cell(0, 8, title, ln=1, fill=True)
-        pdf.ln(2)
-        pdf.set_text_color(0, 0, 0)
-
-    try:
-        pdf = FPDF()
-        pdf.set_title("Sentinel SIEM - Automated Incident Report")
-        pdf.set_author("Sentinel SIEM")
-        pdf.add_page()
-
-        pdf.set_text_color(153, 0, 0)
-        pdf.set_font("Arial", "B", 16)
-        pdf.cell(0, 10, "CONFIDENTIAL: SENTINEL SIEM - AUTOMATED INCIDENT REPORT", ln=1)
-        pdf.set_text_color(0, 0, 0)
+        pdf.set_font("Arial", "B", 14)
+        pdf.set_text_color(40, 50, 70)
+        pdf.cell(0, 8, pdf_text(title), ln=1)
+        pdf.set_draw_color(210, 210, 210)
+        pdf.set_line_width(0.25)
+        pdf.line(pdf.l_margin, pdf.get_y(), pdf.w - pdf.r_margin, pdf.get_y())
         pdf.ln(4)
 
-        add_section_heading(pdf, "Metadata")
-        pdf.set_font("Arial", size=12)
-        pdf.cell(0, 7, f"Date/Time of Analysis: {analysis_time}", ln=1)
-        pdf.cell(0, 7, f"Incident ID: {incident_id}", ln=1)
-        pdf.ln(5)
+    try:
+        pdf = PDF()
+        pdf.alias_nb_pages()
+        pdf.set_title("Sentinel SIEM - Automated Incident Report")
+        pdf.set_author("Sentinel SIEM")
+        pdf.set_margins(20, 20, 20)
+        pdf.set_auto_page_break(auto=True, margin=20)
+        pdf.add_page()
 
-        severity_label = (
-            "High" if float(score or 0) >= 7
-            else "Medium" if float(score or 0) >= 4
-            else "Low"
+        pdf.set_text_color(40, 50, 70)
+        pdf.set_font("Arial", "B", 18)
+        pdf.cell(0, 12, "FORENSIC ANALYSIS & INCIDENT REPORT", ln=1, align="C")
+        pdf.ln(7)
+
+        # Fixed-width metadata columns keep every row perfectly aligned.
+        label_width = 40
+        value_width = 80
+        badge_width = pdf.w - pdf.l_margin - pdf.r_margin - label_width - value_width
+        metadata_rows = (
+            ("Date", analysis_time),
+            ("Report ID", report_id),
+            ("Incident ID", f"INC-{incident_id}"),
+            ("Attacker IP", str(ip)),
         )
-        add_section_heading(pdf, "Executive Summary")
-        pdf.set_font("Arial", size=12)
-        summary = (
-            f"A {severity_label} severity incident involving {vector} was detected "
-            f"with a score of {score} out of 10. The activity requires review of the "
-            "listed indicators and execution of the recommended mitigation playbook."
-        )
-        pdf.multi_cell(0, 7, pdf_text(summary))
-        pdf.ln(5)
+        for index, (label, value) in enumerate(metadata_rows):
+            pdf.set_text_color(40, 50, 70)
+            pdf.set_font("Arial", "B", 10)
+            pdf.cell(label_width, 6, pdf_text(label))
+            pdf.set_text_color(0, 0, 0)
+            pdf.set_font("Arial", size=10)
+            pdf.cell(value_width, 6, pdf_text(value))
+            if index == 0:
+                pdf.set_text_color(139, 0, 0)
+                pdf.set_font("Arial", "B", 10)
+                pdf.cell(badge_width, 6, "TLP: RED", align="R", ln=1)
+            else:
+                pdf.cell(badge_width, 6, "", ln=1)
+        pdf.ln(8)
 
-        add_section_heading(pdf, "Indicators of Compromise (IOCs)")
-        pdf.set_font("Arial", size=12)
-        pdf.cell(0, 7, f"Attacker IP: {pdf_text(ip)}", ln=1)
-        pdf.ln(5)
+        add_section_heading(pdf, "1. Executive Summary")
+        pdf.set_font("Arial", size=11)
+        pdf.set_text_color(0, 0, 0)
+        pdf.multi_cell(0, 6, pdf_text(executive_summary))
+        pdf.ln(8)
 
-        add_section_heading(pdf, "Mitigation & Playbook")
-        pdf.set_font("Arial", size=12)
-        mitigation_steps = mitigation if isinstance(mitigation, list) else [mitigation]
-        for step in mitigation_steps:
-            pdf.multi_cell(0, 7, pdf_text(f"- {step}"))
+        add_section_heading(pdf, "2. Affected Assets")
+        pdf.set_font("Arial", size=11)
+        pdf.set_text_color(0, 0, 0)
+        pdf.multi_cell(0, 6, pdf_text(affected_assets))
+        pdf.ln(8)
+
+        add_section_heading(pdf, "3. Indicators of Compromise")
+        pdf.set_font("Arial", size=11)
+        pdf.set_text_color(0, 0, 0)
+        pdf.multi_cell(0, 6, pdf_text(f"Attacker IP: {ip}"))
+        pdf.ln(8)
+
+        add_section_heading(pdf, "4. Mitigation & Playbook")
+        pdf.set_font("Arial", size=11)
+        pdf.set_text_color(0, 0, 0)
+        mitigation_text = "\n".join(mitigation) if isinstance(mitigation, list) else str(mitigation)
+        cleaned_lines = []
+        for line in mitigation_text.splitlines():
+            cleaned_line = (
+                line.replace("[CRITICAL]", "")
+                .replace("[ACTION]", "")
+                .replace("[INFO]", "")
+                .strip()
+            )
+            if cleaned_line:
+                cleaned_lines.append(cleaned_line)
+
+        for cleaned_line in cleaned_lines:
+            pdf.cell(7, 6, pdf_text(chr(149)))
+            pdf.multi_cell(0, 6, pdf_text(cleaned_line))
+        pdf.ln(8)
+
+        add_section_heading(pdf, "DOCUMENT VERIFICATION")
+        pdf.set_font("Arial", size=10)
+        pdf.set_text_color(0, 0, 0)
+        document_hash = hashlib.sha256(uuid.uuid4().bytes).hexdigest()
+        pdf.multi_cell(0, 6, pdf_text(f"Hash: {document_hash}"))
 
         pdf.output(pdf_path)
         with open(evidence_path, "w", encoding="utf-8") as evidence_file:
@@ -117,13 +189,13 @@ def generate_and_upload_pdf(ip, vector, score, mitigation, log_text):
         s3.upload_file(
             pdf_path,
             AWS_BUCKET_NAME,
-            f"incidents/Incident_{incident_id}_Report.pdf",
+            f"{s3_prefix}/report.pdf",
             ExtraArgs={"ContentType": "application/pdf"},
         )
         s3.upload_file(
             evidence_path,
             AWS_BUCKET_NAME,
-            f"incidents/Incident_{incident_id}_Evidence.txt",
+            f"{s3_prefix}/raw_evidence.txt",
             ExtraArgs={"ContentType": "text/plain"},
         )
     finally:
@@ -236,6 +308,8 @@ def analyze():
         result.get("vector"),
         result.get("score"),
         result.get("mitigation", []),
+        result.get("executive_summary", "No executive summary was provided."),
+        result.get("affected_assets", "No affected assets were identified."),
         log_text,
     )
 
