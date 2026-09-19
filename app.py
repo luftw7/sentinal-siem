@@ -19,6 +19,7 @@ load_dotenv()
 AWS_ACCESS_KEY_ID = os.environ.get("AWS_ACCESS_KEY_ID")
 AWS_SECRET_ACCESS_KEY = os.environ.get("AWS_SECRET_ACCESS_KEY")
 AWS_BUCKET_NAME = os.environ.get("AWS_BUCKET_NAME")
+SNS_TOPIC_ARN = os.environ.get("SNS_TOPIC_ARN")
 
 app = Flask(__name__)
 
@@ -40,7 +41,9 @@ SYSTEM_PROMPT = (
             '"[INFO] Step 3..." '
         '], '
         '"executive_summary": "A highly detailed professional 3-sentence summary of the breach.", '
-        '"affected_assets": "A comma-separated list of likely compromised servers/databases." '
+        '"affected_assets": "A comma-separated list of likely compromised servers/databases.", '
+        '"mitre_code": "The MITRE ATT&CK technique ID, for example T1190.", '
+        '"mitre_tactic": "The corresponding MITRE ATT&CK tactic, for example Initial Access." '
     '}'
 )
 
@@ -61,6 +64,50 @@ class PDF(FPDF):
         self.set_y(-12)
         self.cell(130, 8, "Sentinel SIEM Incident Response Summary")
         self.cell(0, 8, f"Page {self.page_no()}", align="R")
+
+
+def send_critical_alert(ip, vector, score):
+    sns = boto3.client(
+        "sns",
+        aws_access_key_id=AWS_ACCESS_KEY_ID,
+        aws_secret_access_key=AWS_SECRET_ACCESS_KEY,
+        region_name="us-east-1"
+    )
+    sns.publish(
+        TopicArn=SNS_TOPIC_ARN,
+        Subject="CRITICAL ALERT: Sentinel SIEM",
+        Message=(
+            "A critical security threat was detected by Sentinel SIEM.\n\n"
+            f"Attacker IP: {ip}\n"
+            f"Attack Vector: {vector}\n"
+            f"Severity Score: {score}\n\n"
+            "Please investigate this incident immediately and activate the "
+            "appropriate incident response procedures."
+        ),
+    )
+
+
+@app.route("/api/subscribe", methods=["POST"])
+def subscribe_email():
+    data = request.get_json(silent=True) or {}
+    email = str(data.get("email", "")).strip()
+    if "@" not in email or "." not in email.rsplit("@", 1)[-1]:
+        return jsonify({"error": "A valid email address is required."}), 400
+    if not SNS_TOPIC_ARN:
+        return jsonify({"error": "SNS topic is not configured."}), 500
+
+    sns = boto3.client(
+        "sns",
+        aws_access_key_id=AWS_ACCESS_KEY_ID,
+        aws_secret_access_key=AWS_SECRET_ACCESS_KEY,
+    )
+    sns.subscribe(
+        TopicArn=SNS_TOPIC_ARN,
+        Protocol="email",
+        Endpoint=email,
+        ReturnSubscriptionArn=True,
+    )
+    return jsonify({"message": "Subscription pending"})
 
 
 def generate_and_upload_pdf(
@@ -185,6 +232,7 @@ def generate_and_upload_pdf(
             "s3",
             aws_access_key_id=AWS_ACCESS_KEY_ID,
             aws_secret_access_key=AWS_SECRET_ACCESS_KEY,
+            region_name="us-east-1"
         )
         s3.upload_file(
             pdf_path,
@@ -218,7 +266,9 @@ def init_db():
                 score REAL,
                 mitigation TEXT,
                 timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
-                status TEXT DEFAULT 'active'
+                status TEXT DEFAULT 'active',
+                mitre_code TEXT,
+                mitre_tactic TEXT
             )
             """
         )
@@ -228,6 +278,14 @@ def init_db():
         if "status" not in columns:
             connection.execute(
                 "ALTER TABLE alerts ADD COLUMN status TEXT DEFAULT 'active'"
+            )
+        if "mitre_code" not in columns:
+            connection.execute(
+                "ALTER TABLE alerts ADD COLUMN mitre_code TEXT"
+            )
+        if "mitre_tactic" not in columns:
+            connection.execute(
+                "ALTER TABLE alerts ADD COLUMN mitre_tactic TEXT"
             )
         connection.commit()
     finally:
@@ -288,8 +346,10 @@ def analyze():
     try:
         connection.execute(
             """
-            INSERT INTO alerts (ip, vector, score, mitigation, status)
-            VALUES (?, ?, ?, ?, ?)
+            INSERT INTO alerts (
+                ip, vector, score, mitigation, status, mitre_code, mitre_tactic
+            )
+            VALUES (?, ?, ?, ?, ?, ?, ?)
             """,
             (
                 result.get("ip"),
@@ -297,6 +357,8 @@ def analyze():
                 result.get("score"),
                 json.dumps(result.get("mitigation", [])),
                 "active",
+                result.get("mitre_code"),
+                result.get("mitre_tactic"),
             ),
         )
         connection.commit()
@@ -312,6 +374,13 @@ def analyze():
         result.get("affected_assets", "No affected assets were identified."),
         log_text,
     )
+
+    if float(result.get("score", 0)) >= 8.0:
+        send_critical_alert(
+            result.get("ip"),
+            result.get("vector"),
+            result.get("score"),
+        )
 
     return jsonify(result)
 
