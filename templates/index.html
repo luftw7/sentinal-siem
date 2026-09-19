@@ -109,7 +109,7 @@
       <div class="mt-auto rounded-lg border border-line bg-base-900/50 p-3">
         <div class="flex items-center gap-2">
           <span class="relative flex h-2 w-2">
-            <span class="absolute inline-flex h-full w-full animate-pulse-dot rounded-full bg-emerald-400"></span>
+            <span class="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400"></span>
             <span class="relative inline-flex h-2 w-2 rounded-full bg-emerald-400"></span>
           </span>
           <span class="text-xs font-medium text-slate-300">Ingest node online</span>
@@ -194,7 +194,7 @@
             <span class="rounded border border-line/30 bg-base-900/50 px-1.5 py-0.5 text-[11px] font-medium uppercase tracking-wide text-faint">/ 10</span>
           </div>
           <div class="mt-3 h-1.5 w-full overflow-hidden rounded-full bg-base-700">
-            <div id="severityBar" class="h-full rounded-full bg-alert/70 transition-all duration-1000 ease-out" style="width: 0%"></div>
+            <div id="severity-bar-fill" class="h-full rounded-full bg-blue-500 transition-all duration-[1500ms] ease-out w-0" style="width: 0%"></div>
           </div>
         </article>
       </section>
@@ -211,7 +211,7 @@
             </div>
             <span class="font-mono text-[11px] text-faint">sentinel@core:~</span>
           </div>
-          <pre id="mitigationAnalysis" class="overflow-x-auto whitespace-pre-wrap break-words px-5 py-4 font-mono text-[13px] leading-relaxed text-slate-300">&gt; Awaiting log telemetry...<span class="ml-0.5 inline-block h-4 w-2 animate-pulse-dot bg-slate-400 align-middle"></span></pre>
+          <pre id="mitigation-output" class="overflow-x-auto whitespace-pre-wrap break-words px-5 py-4 font-mono text-[13px] leading-relaxed text-slate-300">&gt; Awaiting log telemetry...<span class="ml-0.5 inline-block h-4 w-2 animate-pulse-dot bg-slate-400 align-middle"></span></pre>
         </div>
       </section>
 
@@ -752,8 +752,26 @@
     const originIp = document.getElementById('originIp');
     const attackVector = document.getElementById('attackVector');
     const severityScore = document.getElementById('severityScore');
-    const severityBar = document.getElementById('severityBar');
-    const mitigationAnalysis = document.getElementById('mitigationAnalysis');
+    const severityBarFill = document.getElementById('severity-bar-fill');
+    const mitigationOutput = document.getElementById('mitigation-output');
+
+    function typeWriter(text, elementId, speed) {
+      const element = document.getElementById(elementId);
+      if (!element) return;
+
+      element.textContent = '';
+      let characterIndex = 0;
+
+      function appendNextCharacter() {
+        if (characterIndex >= text.length) return;
+
+        element.textContent += text.charAt(characterIndex);
+        characterIndex += 1;
+        setTimeout(appendNextCharacter, speed);
+      }
+
+      appendNextCharacter();
+    }
 
     async function analyzeFile(file) {
       showFile(file.name);
@@ -762,7 +780,7 @@
       analysisTime.textContent = 'Status: Analyzing...';
       topRightStatus.textContent = 'Status: Analyzing...';
       configureMitreBadge(mitreBadge, null, null);
-      mitigationAnalysis.innerHTML = '> Transmitting telemetry to AI analysis core...<br><span class="ml-0.5 inline-block h-4 w-2 animate-pulse-dot bg-slate-400 align-middle"></span>';
+      mitigationOutput.innerHTML = '> Transmitting telemetry to AI analysis core...<br><span class="ml-0.5 inline-block h-4 w-2 animate-pulse-dot bg-slate-400 align-middle"></span>';
 
       const formData = new FormData();
       formData.append('file', file);
@@ -786,19 +804,24 @@
         // Calculate dynamic width for the severity progress bar (Score out of 10)
         let scoreVal = parseFloat(result.score) || 0;
         severityScore.textContent = scoreVal;
-        let percentage = Math.min((scoreVal / 10) * 100, 100);
-        severityBar.style.width = percentage + '%';
+        const percentage = Math.min(Math.max(scoreVal * 10, 0), 100);
+        severityBarFill.classList.remove('bg-red-500', 'bg-amber-500', 'bg-blue-500');
+        if (scoreVal >= 8.0) {
+          severityBarFill.classList.add('bg-red-500');
+        } else if (scoreVal >= 4.0) {
+          severityBarFill.classList.add('bg-amber-500');
+        } else {
+          severityBarFill.classList.add('bg-blue-500');
+        }
+        severityBarFill.style.width = '0%';
+        setTimeout(function () {
+          severityBarFill.style.width = percentage + '%';
+        }, 50);
 
-        // Render each mitigation step as its own terminal line.
-        mitigationAnalysis.innerHTML = '';
-        result.mitigation.forEach(function (step) {
-          const line = document.createElement('div');
-          line.textContent = '> ' + step;
-          mitigationAnalysis.appendChild(line);
-        });
-        
-        // Add the blinking cursor back to the end
-        mitigationAnalysis.innerHTML += '<span class="ml-0.5 inline-block h-4 w-2 animate-pulse-dot bg-slate-400 align-middle"></span>';
+        const mitigationText = Array.isArray(result.mitigation)
+          ? result.mitigation.map(function (step) { return '> ' + step; }).join('\n')
+          : '> ' + String(result.mitigation || 'No mitigation provided.');
+        typeWriter(mitigationText, 'mitigation-output', 15);
         
         // Ending state
         analysisTime.textContent = 'Status: Analysis Complete';
@@ -808,7 +831,7 @@
         analysisTime.textContent = 'Status: Analysis Failed';
         topRightStatus.textContent = 'Status: Analysis Failed';
         configureMitreBadge(mitreBadge, null, null);
-        mitigationAnalysis.innerHTML = `> [ERROR] ${error.message}<br><span class="ml-0.5 inline-block h-4 w-2 animate-pulse-dot bg-slate-400 align-middle"></span>`;
+        mitigationOutput.innerHTML = `> [ERROR] ${error.message}<br><span class="ml-0.5 inline-block h-4 w-2 animate-pulse-dot bg-slate-400 align-middle"></span>`;
       }
     }
 
