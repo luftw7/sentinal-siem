@@ -152,6 +152,15 @@
           <p id="fileName" class="mt-4 hidden rounded-md border border-line bg-base-900/60 px-3 py-1.5 font-mono text-xs text-emerald-300"></p>
           <p id="analysisTime" class="mt-3 text-xs text-faint">Analysis Time: --s</p>
         </label>
+        <div id="ingestionProgress" class="mx-auto mt-4 hidden max-w-2xl rounded-lg border border-line bg-base-900/60 px-4 py-3 text-left">
+          <div class="flex items-center justify-between gap-4 text-xs">
+            <span id="ingestionStatus" class="font-medium text-accent-soft">Ingesting log telemetry...</span>
+            <span id="ingestionCount" class="font-mono text-faint">0 / 50,000 lines parsed</span>
+          </div>
+          <div class="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-base-700">
+            <div id="ingestionProgressFill" class="h-full w-0 rounded-full bg-accent transition-all duration-75 ease-out"></div>
+          </div>
+        </div>
       </section>
 
       <!-- Data cards -->
@@ -754,6 +763,35 @@
     const severityScore = document.getElementById('severityScore');
     const severityBarFill = document.getElementById('severity-bar-fill');
     const mitigationOutput = document.getElementById('mitigation-output');
+    const ingestionProgress = document.getElementById('ingestionProgress');
+    const ingestionStatus = document.getElementById('ingestionStatus');
+    const ingestionCount = document.getElementById('ingestionCount');
+    const ingestionProgressFill = document.getElementById('ingestionProgressFill');
+
+    function simulateIngestion() {
+      return new Promise(function (resolve) {
+        const totalSteps = 50;
+        let currentStep = 0;
+        ingestionProgress.classList.remove('hidden');
+        ingestionStatus.textContent = 'Ingesting log telemetry...';
+        ingestionCount.textContent = '0 / 50,000 lines parsed';
+        ingestionProgressFill.style.width = '0%';
+
+        const timer = setInterval(function () {
+          currentStep += 1;
+          const percentage = currentStep * 2;
+          const parsedLines = currentStep * 1000;
+          ingestionProgressFill.style.width = percentage + '%';
+          ingestionCount.textContent = parsedLines.toLocaleString() + ' / 50,000 lines parsed';
+
+          if (currentStep === totalSteps) {
+            clearInterval(timer);
+            ingestionStatus.textContent = 'Ingestion complete';
+            resolve();
+          }
+        }, 40);
+      });
+    }
 
     function typeWriter(text, elementId, speed) {
       const element = document.getElementById(elementId);
@@ -781,6 +819,8 @@
       topRightStatus.textContent = 'Status: Analyzing...';
       configureMitreBadge(mitreBadge, null, null);
       mitigationOutput.innerHTML = '> Transmitting telemetry to AI analysis core...<br><span class="ml-0.5 inline-block h-4 w-2 animate-pulse-dot bg-slate-400 align-middle"></span>';
+
+      await simulateIngestion();
 
       const formData = new FormData();
       formData.append('file', file);
